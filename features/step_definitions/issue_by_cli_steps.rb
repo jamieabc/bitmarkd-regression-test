@@ -52,8 +52,8 @@ Then(/^asset metadata of "(.*)" is "(.*)"$/) do |expected_key, expected_value|
 end
 
 Then(/^asset quantity is "(\d+)"$/) do |expected_quantity|
-  get_prvenance_data
-  puts "provenance: #{@provenance}"
+  issued_quantity = JSON.parse(@result)["issueIds"].size if @result
+  expect(issued_quantity).to eq(expected_quantity)
 end
 
 Then(/^I got an error message of "(.*)"$/) do |msg|
@@ -72,12 +72,6 @@ def get_issue_data
   ssl = open_ssl_socket
   ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{@fingerprint}\"]}]}"
   @issued = JSON.parse(ssl.gets)
-end
-
-def get_prvenance_data
-  ssl = open_ssl_socket
-  ssl.puts "{\"id\":\"1\",\"method\":\"Bitmark.Provenance\",\"params\":[{\"txId\": [\"#{@issue_id}\"]}]}"
-  @provenance = JSON.parse(ssl.gets)
 end
 
 def get_issue_id_from_response
