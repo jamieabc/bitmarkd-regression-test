@@ -83,7 +83,7 @@ def cli_get_issue_status(expected)
   status = "pending"
   retry_cnt = 40
   while retry_cnt > 0
-    result = cli_query_issue
+    result = `#{cli_query_issue}`
     json = JSON.parse(result)
     if json && json["status"]
       status = json["status"]
