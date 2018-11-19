@@ -96,7 +96,7 @@ def cli_get_issue_status(expected)
 end
 
 def cli_query_issue
-  `#{cli_base_command} status #{cli_query_issue_args}`
+  "#{cli_base_command} status #{cli_query_issue_args}"
 end
 
 def cli_query_issue_args
