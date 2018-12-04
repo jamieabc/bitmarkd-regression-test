@@ -1,7 +1,7 @@
-Given(/^I am a user of bitmark-cli$/) do
+Given(/^I have bitmark-cli config file$/) do
   setup_variables
   # generate only if config file not exist
-  if !File.exist? cli_file
+  if !File.exist? @cli_file
     result = `#{cli_setup_command}`
 
     # check if config file create successfully
@@ -23,32 +23,12 @@ def cli_url
   "#{host_ip}:#{host_port}"
 end
 
-def desc
-  "test"
-end
-
-def identity
-  "regression test user"
-end
-
-def password
-  "12345678"
-end
-
-def cli_file
-  "cli.conf"
-end
-
-def network
-  "local"
-end
-
 def setup_variables
-  @cli_identity = identity
-  @cli_password = password
-  @cli_filename = cli_file
-  @cli_network = network
-  @cli_description = desc
+  @cli_identity = 'regression test user'
+  @cli_password = '12345678'
+  @cli_file = 'cli.conf'
+  @cli_network = 'local'
+  @cli_description = 'test'
 end
 
 def remove_config
@@ -56,7 +36,7 @@ def remove_config
 end
 
 def cli_base_command
-  "bitmark-cli -c #{@cli_filename} -i '#{@cli_identity}' -p #{@cli_password}"
+  "bitmark-cli -c #{@cli_file} -i '#{@cli_identity}' -p #{@cli_password}"
 end
 
 def cli_setup_args

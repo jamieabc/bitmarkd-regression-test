@@ -1,38 +1,34 @@
-Feature: Create an issue record by bitmark-cli tool
+Feature: Create issue by bitmark-cli
 
-  The user wants to use bitmark-cli to create an issue to record digital asset.
+  User wants to use bitmark-cli to create an issue for their digital assets.
 
-  Background:
-    Given I am a user of bitmark-cli
+  Background: I am a bitmark-cli user
+    Given I have bitmark-cli config file
 
-  Scenario: Issue a digital asset successfully
-    Given I have a digital asset named "my first asset"
-    And I have only "1" amount
-    And I want metadata of "owner" to be "Bob"
+  Scenario Outline: Issue digital asset(s)
+    Given I have digital asset name <asset name>
+    And amount <asset amount>, metadata <meta key> to be <meta value>
     When I issue
-    Then I can have a "confirmed" record on blockchain
-    And asset name is "my first asset"
-    And asset metadata of "owner" is "Bob"
-    And asset quantity is "1"
+    Then I have valid asset stored on blockchain
+    And with name <asset name>, amount <asset amount>, metadata <meta key> to be <meta value>
 
-  Scenario: Issue a digital asset without name
-    Given I have a digital asset
-    And I have only "1" amount
-    And I want metadata of "owner" to be "Alice"
-    When I issue
-    Then I got an error message of "asset name is required"
+    Examples: Successful examples
+      Necessary fields are provided
 
-  Scenario: Issue a digital asset without quantity
-    Given I have a digital asset named "my second asset"
-    And I want metadata of "owner" to be "James"
-    When I issue
-    Then I can have a "confirmed" record on blockchain
-    And asset name is "my second asset"
-    And asset metadata of "owner" is "James"
-    And asset quantity is "1"
+      | asset name    | asset amount | meta key | meta value |
+      | "cli asset 1" | "1"          | "owner"  | "Bob"      |
 
-  Scenario: Issue a digital asset without metadata
-    Given I have a digital asset named "my third asset"
-    And I have only "1" amount
+  Scenario Outline: Issue with missing parameters
+    Given I have digital asset name <asset name>
+    And amount <asset amount>, metadata <meta key> to be <meta value>
     When I issue
-    Then I got an error message of "metadata is required"
+    Then I failed with cli error message <error message>
+
+    Examples: Missing necessary parameters
+      asset name and metadata are both required.
+    
+      | asset name | asset amount | meta key | meta value | error message            |
+      | ""         | "1"          | "owner"  | "James"    | "asset name is required" |
+      | "Failed 1" | "1"          | ""       | ""         | "metadata is not map"    |
+      | "Failed 2" | "1"          | "owner"  | ""         | "metadata is not map"    |
+      | "Failed 3" | "1"          | ""       | "Sam"      | "metadata is not map"    |

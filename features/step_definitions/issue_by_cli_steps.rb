@@ -4,60 +4,57 @@ require 'socket'
 require 'rspec'
 require 'pry'
 
-Given(/^I have a digital asset named "(.*)"$/) do |name|
+Given(/^I have digital asset name "(.*)"$/) do |name|
   @asset_name = name
 end
 
-Given(/^I have a digital asset$/) do
-  @asset_name = ""
-end
+Given(/^amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |amount, key, value| 
+  @asset_quantity = amount.length.zero? ? 0 : amount.to_i
 
-Given(/^I have only "(\d+)" amount$/) do |amount|
-  @aset_quantity = amount
-end
-
-Given(/^I want metadata of "(.*)" to be "(.*)"$/) do |key, value|
-  # create a hash if not exist
+  # initialized metadata hash
   if @asset_meta.nil?
     @asset_meta = {}
-  end
+  end 
 
   @asset_meta[key] = value
 end
 
 When(/^I issue$/) do
   cmd = cli_create_issue_command
+  puts "issue command: #{cmd}"
   @result = `#{cmd}`
   puts "issue with response: #{@result}"
   raise "Issue faile with message #{@result}" if !@result
 end
 
-Then(/^I can have a "(.*)" record on blockchain$/) do |expected|
+Then(/^I have valid asset stored on blockchain$/) do
+  exp_status = 'confirmed'
   @issue_id = get_issue_id_from_response
+
   puts "wait issue to be confirmed..."
-  status = cli_get_issue_status(expected)
-  raise "issue #{@issue_id} status not #{expected}" if status.downcase != expected.downcase
+  status = check_issue_status(exp_status)
 
-  get_issue_data
+  raise "issue #{@issue_id} status not #{exp_status}" if status.downcase != exp_status
+
+  rpc_query_issued_data
 end
 
-Then(/^asset name is "(.*)"$/) do |expected_name|
-  expect(@issued["result"]["assets"].first["data"]["name"]).to eq(expected_name)
-end
+Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_name, exp_amount, exp_key, exp_value|
 
-Then(/^asset metadata of "(.*)" is "(.*)"$/) do |expected_key, expected_value|
-  expected = returned_meta_str(expected_key, expected_value)
+  expect(@issued["result"]["assets"].first["data"]["name"]).to eq(exp_name)
+
+  exp_meta_str = returned_meta_str(exp_key, exp_value)
+
   got = @issued["result"]["assets"].first["data"]["metadata"]
-  expect(got).to eql(expected)
+  expect(got).to eql(exp_meta_str)
+
+  issued_amount = JSON.parse(@result)["issueIds"].size if @result
+  target_amount = exp_amount.length.zero? ? 0 : exp_amount.to_i
+  expect(issued_amount ).to eq(target_amount)
 end
 
-Then(/^asset quantity is "(\d+)"$/) do |expected_quantity|
-  issued_quantity = JSON.parse(@result)["issueIds"].size if @result
-  expect(issued_quantity).to eq(expected_quantity)
-end
-
-Then(/^I got an error message of "(.*)"$/) do |msg|
-  expect(@result).to include(msg)
+Then(/^I failed with cli error message "(.*)"$/) do |err_msg|
+  expect(@result).to include(err_msg)
 end
 
 def open_ssl_socket
@@ -68,7 +65,7 @@ def open_ssl_socket
   ssl
 end
 
-def get_issue_data
+def rpc_query_issued_data
   ssl = open_ssl_socket
   ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{@fingerprint}\"]}]}"
   @issued = JSON.parse(ssl.gets)
@@ -79,24 +76,27 @@ def get_issue_id_from_response
   json["issueIds"].first
 end
 
-def cli_get_issue_status(expected)
-  status = "pending"
-  retry_cnt = 40
-  while retry_cnt > 0
-    result = `#{cli_query_issue}`
+def check_issue_status(expected_status)
+  for i in 0..query_retry_count
+    result = cli_get_issue_status
     json = JSON.parse(result)
     if json && json["status"]
-      status = json["status"]
-      break if status.downcase == expected.downcase
+      resp_status = json["status"]
+      break if resp_status.downcase == expected_status.downcase
     end
-    retry_cnt -= 1
+
     sleep 5
   end
-  status
+
+  resp_status
 end
 
-def cli_query_issue
-  "#{cli_base_command} status #{cli_query_issue_args}"
+def query_retry_count
+  40
+end
+
+def cli_get_issue_status
+  `#{cli_base_command} status #{cli_query_issue_args}`
 end
 
 def cli_query_issue_args
