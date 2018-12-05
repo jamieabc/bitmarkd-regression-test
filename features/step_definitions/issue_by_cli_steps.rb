@@ -20,23 +20,22 @@ Given(/^amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |amount, key, value|
 end
 
 When(/^I issue$/) do
-  cmd = cli_create_issue_command
-  puts "issue command: #{cmd}"
-  @result = `#{cmd}`
-  puts "issue with response: #{@result}"
-  raise "Issue faile with message #{@result}" if !@result
+  do_new_issue
+end
+
+When(/^I issue first time and wait for it become valid$/) do
+  do_new_issue
+  set_issue_id_from_response
+  wait_until_issue_confirmed
+end
+
+When(/^I issue second time$/) do
+  do_prev_issue
 end
 
 Then(/^I have valid asset stored on blockchain$/) do
-  exp_status = 'confirmed'
-  @issue_id = get_issue_id_from_response
-
-  puts "wait issue to be confirmed..."
-  status = check_issue_status(exp_status)
-
-  raise "issue #{@issue_id} status not #{exp_status}" if status.downcase != exp_status
-
-  rpc_query_issued_data
+  set_issue_id_from_response
+  wait_until_issue_confirmed
 end
 
 Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_name, exp_amount, exp_key, exp_value|
@@ -48,13 +47,55 @@ Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_
   got = @issued["result"]["assets"].first["data"]["metadata"]
   expect(got).to eql(exp_meta_str)
 
-  issued_amount = JSON.parse(@result)["issueIds"].size if @result
+  issued_amount = JSON.parse(@cli_result)["issueIds"].size if @cli_result
   target_amount = exp_amount.length.zero? ? 0 : exp_amount.to_i
   expect(issued_amount ).to eq(target_amount)
 end
 
 Then(/^I failed with cli error message "(.*)"$/) do |err_msg|
-  expect(@result).to include(err_msg)
+  expect(@cli_result).to include(err_msg)
+end
+
+Then(/^second issue should return payment info$/) do
+  json = JSON.parse(@cli_result)
+  expect(json.has_key? 'payments').to be_truthy
+  expect(json.has_key? 'commands').to be_truthy
+end
+
+def do_new_issue
+  do_issue(again: false)
+end
+
+def do_prev_issue
+  do_issue(again: true)
+end
+
+def do_issue(again: false)
+  @cli_result = nil
+  # generate new issue or use previous one
+  if again && !@prev_cli_cmd.nil?
+    cmd = @prev_cli_cmd
+    # clear previous existing result
+  else
+    cmd = cli_create_issue
+    @prev_cli_cmd = cli_create_issue
+  end
+
+  puts "issue command: #{cmd}"
+  @cli_result = `#{cmd}`
+  puts "issue with response: #{@cli_result}"
+  raise "Issue failed with message #{@cli_result}" if !@cli_result
+end
+
+
+def wait_until_issue_confirmed
+  exp_status = 'confirmed'
+  puts "wait issue to be confirmed..."
+  status = check_issue_status(exp_status)
+
+  raise "issue #{@issue_id} status not #{exp_status}" if status.downcase != exp_status
+
+  rpc_query_issued_data
 end
 
 def open_ssl_socket
@@ -71,9 +112,11 @@ def rpc_query_issued_data
   @issued = JSON.parse(ssl.gets)
 end
 
-def get_issue_id_from_response
-  json = JSON.parse(@result)
-  json["issueIds"].first
+def set_issue_id_from_response
+  raise "Issue failed with message #{@cli_result}" if !@cli_result
+  json = JSON.parse(@cli_result)
+  puts "result: #{@cli_result}"
+  @issue_id = json["issueIds"].first
 end
 
 def check_issue_status(expected_status)
@@ -85,7 +128,7 @@ def check_issue_status(expected_status)
       break if resp_status.downcase == expected_status.downcase
     end
 
-    sleep 5
+    sleep 10
   end
 
   resp_status
@@ -103,7 +146,7 @@ def cli_query_issue_args
   "--txid #{@issue_id}"
 end
 
-def cli_create_issue_command
+def cli_create_issue
   "#{cli_base_command} create #{cli_create_issue_args} 2>&1"
 end
 

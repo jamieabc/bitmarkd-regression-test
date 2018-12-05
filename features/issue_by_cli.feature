@@ -32,3 +32,10 @@ Feature: Create issue by bitmark-cli
       | "Failed 1" | "1"          | ""       | ""         | "metadata is not map"    |
       | "Failed 2" | "1"          | "owner"  | ""         | "metadata is not map"    |
       | "Failed 3" | "1"          | ""       | "Sam"      | "metadata is not map"    |
+      
+  Scenario: Issue same asset twice provides payment info
+    Given I have digital asset name "The Mona Lisa"
+    And amount "1", metadata "owner" to be "Hank"
+    When I issue first time and wait for it become valid
+    And I issue second time
+    Then second issue should return payment info
