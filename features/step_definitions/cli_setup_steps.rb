@@ -32,7 +32,7 @@ def setup_variables
 end
 
 def remove_config
-  File.delete cli_file
+  File.delete @cli_file
 end
 
 def cli_base_command
