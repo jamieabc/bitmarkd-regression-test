@@ -37,5 +37,5 @@ Feature: Create issue by bitmark-cli
     Given I have digital asset name "The Mona Lisa"
     And amount "1", metadata "owner" to be "Hank"
     When I issue first time and wait for it become valid
-    And I issue second time
-    Then second issue should return payment info
+    And I issue same asset second time
+    Then I need to pay for second issue
