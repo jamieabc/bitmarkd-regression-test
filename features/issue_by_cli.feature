@@ -15,8 +15,8 @@ Feature: Create issue by bitmark-cli
     Examples: Successful examples
       Necessary fields are provided
 
-      | asset name    | asset amount | meta key | meta value |
-      | "cli asset 1" | "1"          | "owner"  | "Bob"      |
+      | asset name | asset amount | meta key | meta value |
+      | "Irises"   | "1"          | "owner"  | "Bob"      |
 
   Scenario Outline: Issue with missing parameters
     Given I have digital asset name <asset name>
