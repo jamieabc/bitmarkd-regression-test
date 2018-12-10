@@ -5,6 +5,8 @@ result_file="${shared_dir}/result.json"
 repo="https://git.bitmark.com:8080/system/bitmarkd-regression-test.git"
 conf="conf/cli.conf"
 
+ERROR_CODE=1
+
 # setup env variable
 export PATH=~/gocode/bin:$PATH
 
@@ -30,11 +32,16 @@ cucumber --format json -o ~/${result_file}
 
 # check cucumber status
 if [ $? -ne 0 ]; then
-    cucumber_fail=true
+    cucumber_fail="true"
 fi
 
-cat ~/${result_file}
+if [ ! -f $result_file ]; then
+    printf "${result_file} not exist, abort..."
+    exit $ERROR_CODE
+else
+    cat ~/${result_file}
+fi
 
-if [ "${cucumber_fail}" = true ]; then
-    exit -1
+if [ "${cucumber_fail}" == "true" ]; then
+    exit $ERROR_CODE
 fi
