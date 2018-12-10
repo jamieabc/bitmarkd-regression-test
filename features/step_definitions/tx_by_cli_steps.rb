@@ -85,11 +85,15 @@ def do_transfer(receiver:, counter_sign:)
 end
 
 def tx_args(receiver:, counter_sign:)
-  counter_sign ? (counter_sign_tx_args id: @tx_id, receiver: receiver) :
-    (unratified_tx_args id: @tx_id, receiver: receive)
+  if counter_sign == true
+    counter_sign_tx_args id: @tx_id, receiver: receiver
+  else
+    unratified_tx_args id: @tx_id, receiver: receiver
+  end
 end
 
 def get_owner(owner)
   return @cli_identity if owner == "me"
+
   owner
 end
