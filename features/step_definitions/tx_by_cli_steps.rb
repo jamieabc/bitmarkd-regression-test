@@ -35,8 +35,19 @@ When(/^wait transfer become valid$/) do
   wait_until_tx_status id: @pay_tx_id, exp_status: "confirmed"
 end
 
-When(/^I counter-sign transfer of asset to "(.*)"$/) do |friend|
+When(/^I counter-sign transfer asset to my friend "(.*)"$/) do |friend|
+  do_counter_sign_tx_to friend
 end
+
+When(/^"(.*)" also counter-signs transfer$/) do |user|
+  do_counter_sign_receive user
+end
+
+# And "Foo" also counter-signs transfer
+# And pay for transfer fee
+# And wait transfer become valid
+# Then asset first owner is "me"
+# And asset latest owner is "Foo"
 
 Then(/^asset first owner is "(.*)"$/) do |owner|
   get_provenance_history
@@ -53,9 +64,29 @@ Then(/^asset latest owner is "(.*)"$/) do |owner|
 end
 
 def do_unratified_tx_to(receiver)
-  tx_args = unratified_tx_args(id: @tx_id, receiver: receiver)
-  puts "\nunratified tx cmd: #{cli_default_user_cmd} transfer #{tx_args}\n"
-  @cli_result = `#{cli_default_user_cmd} transfer #{tx_args} 2>&1`
+  do_transfer(receiver: receiver, counter_sign: false)
+end
+
+def do_counter_sign_tx_to(receiver)
+  do_transfer(receiver: receiver, counter_sign: true)
+end
+
+def do_counter_sign_receive(receiver)
+  json = JSON.parse(@cli_result)
+  tx_hex = json["transfer"]
+  cli_base_cmd = cli_user_cmd user: receiver, password: @cli_password
+  @cli_result = `#{cli_base_cmd} countersign --transfer #{tx_hex}`
+end
+
+def do_transfer(receiver:, counter_sign:)
+  arg = tx_args(receiver: receiver, counter_sign: counter_sign)
+  puts "\ntx cmd: #{cli_default_user_cmd} transfer #{arg}\n"
+  @cli_result = `#{cli_default_user_cmd} transfer #{arg} 2>&1`
+end
+
+def tx_args(receiver:, counter_sign:)
+  counter_sign ? (counter_sign_tx_args id: @tx_id, receiver: receiver) :
+    (unratified_tx_args id: @tx_id, receiver: receive)
 end
 
 def get_owner(owner)

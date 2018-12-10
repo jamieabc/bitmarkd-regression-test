@@ -46,5 +46,5 @@ def cli_get_tx_status(id)
 end
 
 def cli_get_provenance(id)
-  result = `#{cli_default_user_cmd} provenance #{tx_id_args id}`
+  `#{cli_default_user_cmd} provenance #{tx_id_args id}`
 end

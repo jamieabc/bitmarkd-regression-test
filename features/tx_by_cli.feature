@@ -8,7 +8,7 @@ Feature: Create tx by bitmark-cli
     And I have a friend "Foo" with bitmark account
     
   Scenario: Unratified transfer digital asset to my friend
-    Given I have asset name "my precious asset" on blockchain
+    Given I have asset name "The Starry Night" on blockchain
     When I unratified transfer asset to my friend "Foo"
     And pay for transfer fee
     And wait transfer become valid
@@ -16,7 +16,7 @@ Feature: Create tx by bitmark-cli
     And asset latest owner is "Foo"
     
   Scenario: Counter-sign transfer digital asset to my friend
-    Given I have asset name "my valuable asset" on blockchain
+    Given I have asset name "The Harvest" on blockchain
     When I counter-sign transfer asset to my friend "Foo"
     And "Foo" also counter-signs transfer
     And pay for transfer fee
