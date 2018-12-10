@@ -1,6 +1,8 @@
 require 'pry'
 
 def wait_until_tx_status(id:, exp_status:)
+  # mine some blocks, make sure transfer is confirmed
+  mine_block(6)
   puts "wait tx #{id} to become #{exp_status}..."
   status = check_tx_status(id: id, exp_status: exp_status)
 
@@ -13,14 +15,14 @@ def check_tx_status(id:, exp_status:)
   # for i in 0..query_retry_count
   start = Time.now
   resp_status = nil
+  iterate_count = 0
   loop do
     result = cli_get_tx_status(id)
-    puts "cli result: #{result}"
     json = JSON.parse(result)
-    puts "cli result json: #{json}"
+    iterate_count += 1
     if json && json["status"]
       resp_status = json["status"]
-      break if resp_status.casecmp? exp_status
+      break if (resp_status.casecmp? exp_status) || iterate_count == 40
     end
 
     sleep 10

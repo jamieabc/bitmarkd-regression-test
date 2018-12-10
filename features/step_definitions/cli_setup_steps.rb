@@ -20,16 +20,12 @@ Given(/^I have a friend "(.*)" with bitmark account$/) do |friend|
   end
 end
 
-Given(/^latest wallet balance is able to do transfer$/) do
-  if File.exist? @wallet_file
-    resp = `#{wallet_sync_balance}`
-    balance = resp.split("\n")
-      .select { |str| str.include? "Balance:" }.first
-      .split(" ")[1].to_i
-    expect(balance).to be > transfer_fee
-  else
-    raise "Error: wallet config file #{@wallet_file} not exist"
-  end
+Given(/^wallet has enough balance to pay$/) do
+  raise "Error: wallet config file #{@wallet_file} not exist" if !File.exist? @wallet_file
+  beg_for_coins
+  balance = get_wallet_btc_balance
+
+  expect(balance).to be > minimum_required_balance
 end
 
 def user_exist?(name)

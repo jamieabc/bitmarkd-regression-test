@@ -17,7 +17,7 @@ When(/^I unratified transfer asset to my friend "(.*)"$/) do |friend|
   do_unratified_tx_to friend
 end
 
-When(/^I pay for transfer fee$/) do
+When(/^pay for transfer fee$/) do
   puts "cli result: #{@cli_result}"
   json = JSON.parse(@cli_result)
   @pay_tx_id = json["transferId"]
@@ -31,7 +31,7 @@ When(/^I pay for transfer fee$/) do
   puts "btc payment tx id: #{JSON.parse(pay_result)["txId"]}"
 end
 
-When(/^I wait transfer become valid$/) do
+When(/^wait transfer become valid$/) do
   wait_until_tx_status id: @pay_tx_id, exp_status: "confirmed"
 end
 
@@ -40,14 +40,16 @@ end
 
 Then(/^asset first owner is "(.*)"$/) do |owner|
   get_provenance_history
-  first_owner = get_identity provenance: @provenance, idx: 2
+  first_owner_idx = 1
+  first_owner = get_identity provenance: @provenance, idx: first_owner_idx
   expect(first_owner).to eq(get_owner(owner))
 end
 
 Then(/^asset latest owner is "(.*)"$/) do |owner|
   get_provenance_history
-  latest_owner = get_identity provenance: @provenance, idx: @provenance.length - 1
-  expect(latest_owner).to be(get_owner(owner))
+  latest_owner_idx = 0
+  latest_owner = get_identity provenance: @provenance, idx: latest_owner_idx
+  expect(latest_owner).to eq(get_owner(owner))
 end
 
 def do_unratified_tx_to(receiver)
