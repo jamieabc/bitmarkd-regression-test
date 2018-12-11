@@ -10,11 +10,19 @@ ERROR_CODE=1
 # setup env variable
 export PATH=~/gocode/bin:$PATH
 
-echo removing previous result
-rm ~/${result_file}
+printf "\nRemoving previous result...\n"
+if [ -f ~/${result_file} ]; then
+    rm ~/${result_file}
+fi
 
 echo run regression environment setup
 eval ~/$regression_env_script
+
+# check if regression script executed successfully
+if [ $? -ne 0 ]; then
+    printf "\nregression script execute failed...abort"
+    exit $ERROR_CODE
+fi
 
 echo remove existing regression directory
 rm -rf ~/${regression_dir}
@@ -35,13 +43,14 @@ if [ $? -ne 0 ]; then
     cucumber_fail="true"
 fi
 
-if [ ! -f "~/${result_file}" ]; then
+if [ ! -f ~/${result_file} ]; then
     printf "${result_file} not exist, abort..."
     exit $ERROR_CODE
 else
     cat ~/${result_file}
 fi
 
-if [ "${cucumber_fail}" == "true" ]; then
+# on freebuilder, the shell is zsh, so use single equal sign
+if [ "${cucumber_fail}" = "true" ]; then
     exit $ERROR_CODE
 fi
