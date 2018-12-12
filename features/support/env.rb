@@ -19,7 +19,7 @@ def setup_variables
   @pay_tx_id = nil
   @provenance = nil
 
-  @os = `uname -a`.gsub(/\n/, "")
+  @os = `uname`.gsub(/\n/, "")
 end
 
 def host_port
