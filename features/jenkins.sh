@@ -3,7 +3,6 @@ regression_env_script="bin/run-regression"
 regression_dir="bitmarkd-regression-test"
 result_file="${shared_dir}/result.json"
 repo="https://git.bitmark.com:8080/system/bitmarkd-regression-test.git"
-conf="conf/cli.conf"
 
 ERROR_CODE=1
 
@@ -31,7 +30,8 @@ echo cloning newest regression test cases
 git clone "${repo}"
 
 # copy conf file
-cp ~/${conf} ~/${regression_dir}/
+cp ~/conf/cli3.conf ~/${regression_dir}/
+cp ~/conf/cli4.conf ~/${regression_dir}/
 
 # run test cases
 cd ~/${regression_dir}
