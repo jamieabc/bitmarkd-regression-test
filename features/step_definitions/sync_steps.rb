@@ -1,20 +1,56 @@
-Given(/^3 bitmarkds all have same blockchain data$/) do
+require "pry"
+
+Given(/^some bitmarkds already working normally$/) do
+  # check normal status
+  switch_cli_file_to_normal
+  bm_status = get_bitmarkd_status
+  expect(bm_status).to eq("Normal")
+
+  # target backup one
+  switch_cli_file_to_backup
 end
 
-Given(/^1 bitmarkd starts from empty data$/) do
+Given(/^I clean start a bitmarkd$/) do
+  stop_bitmarkd(4)
+  clean_bitmarkd_data(4)
 end
 
-When (/^bitmarkd is working normally$/) do
+When(/^my newly started bitmarkd is working normally$/) do
+  start_bitmarkd(4)
+
+  # bitmarkd take some time to start
+  puts "wait #{bitmarkd_start_time_sec}"
+  sleep bitmarkd_start_time_sec
+
+  wait_until_bitmarkd_status("Normal")
 end
 
-Then (/^after some time, bitmarkd should have same data as other nodes$/) do
+Then(/^my newly started bitmarkd should have same data as other nodes$/) do
+  same = same_blockchain? 5, 4
+  expect(same).to be_truthy
 end
 
-Given (/^1 bitmarkd has forked blockchain history$/) do
+Given(/^my bitmarkd has forked blockchain history$/) do
+  stop_bitmarkd(4)
+  change_data_to_old(4)
 end
 
-When (/^forked bitmarkd is working normally$/) do
+When(/^forked bitmarkd is working normally$/) do
+  start_bitmarkd(4)
+
+  # bitmarkd take some time to start
+  puts "wait #{bitmarkd_start_time_sec}"
+  sleep bitmarkd_start_time_sec
+
+  wait_until_bitmarkd_status("Normal")
 end
 
-Then (/^forked bitmarkd will have same records as other bitmarkds$/) do
+Then(/^forked bitmarkd will have same records as other notes$/) do
+  same = same_blockchain? 5, 4
+  expect(same).to be_truthy
+end
+
+# change cli file to use normal bitmarkd
+After("@sync_last_scenario") do
+  switch_cli_file_to_normal
 end

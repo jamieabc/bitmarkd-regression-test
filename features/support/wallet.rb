@@ -3,7 +3,7 @@ def minimum_required_balance
 end
 
 def wallet_address
-  'mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd'
+  "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd"
 end
 
 def beg_for_coins

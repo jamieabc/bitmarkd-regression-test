@@ -13,7 +13,7 @@ end
 
 # this value needs to be synced with wallet address
 def btc_address
-  'mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd'
+  "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd"
 end
 
 def mine_block(count)
@@ -21,5 +21,5 @@ def mine_block(count)
 end
 
 def btc_cli_base_cmd
-  'bitcoin-cli -conf=bitcoin.conf'
+  "bitcoin-cli -conf=bitcoin.conf"
 end

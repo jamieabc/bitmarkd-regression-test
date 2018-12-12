@@ -1,4 +1,4 @@
-require 'pry'
+require "pry"
 
 def wait_until_tx_status(id:, exp_status:)
   # mine some blocks, make sure transfer is confirmed
@@ -34,7 +34,7 @@ def check_tx_status(id:, exp_status:)
 end
 
 def open_ssl_socket
-  socket = TCPSocket.new("172.16.23.113", 2230)
+  socket = TCPSocket.new(host_ip, host_port)
   ssl = OpenSSL::SSL::SSLSocket.new(socket)
   ssl.sync_close = true
   ssl.connect
@@ -53,7 +53,7 @@ def get_identity(provenance:, idx:)
     puts "provenance: #{provenance}, target element index: #{idx}"
     raise "Error, provenance is not long enough"
   end
-  provenance[idx]['_IDENTITY']
+  provenance[idx]["_IDENTITY"]
 end
 
 def get_provenance_history
