@@ -84,7 +84,11 @@ def clean_bitmarkd_data(bitmarkd_number)
 end
 
 def bitmarkd_path(bitmarkd_number)
-  ".config/bitmarkd#{bitmarkd_number}"
+  if is_os_freebsd
+    "~/.config/bitmarkd#{bitmarkd_number}"
+  else
+    ".config/bitmarkd#{bitmarkd_number}"
+  end
 end
 
 # should use GOPATH, but it will be replaced by host computer
