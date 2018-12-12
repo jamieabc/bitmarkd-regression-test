@@ -163,7 +163,7 @@ end
 
 def same_blockchain?(benchmark, new)
   benchmark_db = dump_db_tx(benchmark)
-  raise "Error empty result of bitamarkd #{benchamrk} dump" if benchmark_db.empty?
+  raise "Error empty result of bitamarkd #{benchmark} dump" if benchmark_db.empty?
 
   new_db = dump_db_tx(new)
   raise "Error empty result of bitamarkd #{new} dump" if new_db.empty?
