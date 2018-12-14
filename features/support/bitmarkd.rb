@@ -145,10 +145,24 @@ def remove_unwanted_data(str)
   str[truncate_length..(-1 * truncate_length - 1)]
 end
 
-def change_data_to_old(bitmarkd_number)
+def check_backup_data_exist?(bitmarkd_number)
+  cmd = "ls #{bitmarkd_path bitmarkd_number}/#{data_backup_dir}"
+
+  if !is_os_freebsd
+    cmd = ssh_cmd + " " + double_quote_str(cmd)
+  end
+
+  result = `#{cmd}`
+
+  raise "#{backup_dir} not exist" if result.include? "No such file or directory"
+end
+
+def change_data_to_backup(bitmarkd_number)
+  check_backup_data_exist? bitmarkd_number
+
   cd_cmd = enter_bitmarkd_dir_cmd bitmarkd_number
   rm_cmd = "rm -r data"
-  change_cmd = "cp -r data-backup data"
+  change_cmd = "cp -r #{data_backup_dir} data"
 
   cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
 
@@ -157,7 +171,7 @@ def change_data_to_old(bitmarkd_number)
   end
   puts "cmd: #{cmd}"
 
-  puts "restore bitmarkd#{bitmarkd_number} previous data-backup directory to data"
+  puts "restore bitmarkd#{bitmarkd_number} previous #{data_backup_dir} directory to data"
   @ssh_result = `#{cmd}`
 end
 
