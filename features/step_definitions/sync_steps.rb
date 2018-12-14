@@ -32,7 +32,7 @@ end
 
 Given(/^my bitmarkd has forked blockchain history$/) do
   stop_bitmarkd(4)
-  change_data_to_old(4)
+  change_data_to_backup(4)
 end
 
 When(/^forked bitmarkd is working normally$/) do
@@ -52,5 +52,8 @@ end
 
 # change cli file to use normal bitmarkd
 After("@sync_last_scenario") do
+  start_bitmarkd(4)
+  start_bitmarkd(5)
+  wait_until_bitmarkd_status("Normal")
   switch_cli_file_to_normal
 end
