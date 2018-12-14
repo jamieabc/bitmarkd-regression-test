@@ -20,6 +20,13 @@ def setup_variables
   @provenance = nil
 
   @os = `uname`.gsub(/\n/, "")
+  reset_issue_args
+end
+
+def reset_issue_args
+  @asset_name = nil
+  @asset_meta = {}
+  @fingerprint = nil
 end
 
 def host_port
@@ -57,4 +64,8 @@ end
 # assume .ssh/config with settings of server freebuilder, no need to type pass phrase
 def ssh_cmd
   "ssh free"
+end
+
+def data_backup_dir
+  "data-backup"
 end
