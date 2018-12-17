@@ -45,7 +45,7 @@ When(/^forked bitmarkd is working normally$/) do
   wait_until_bitmarkd_status("Normal")
 end
 
-Then(/^forked bitmarkd will have same records as other notes$/) do
+Then(/^forked bitmarkd will have same records as other nodes$/) do
   same = same_blockchain? 5, 4
   expect(same).to be_truthy
 end
