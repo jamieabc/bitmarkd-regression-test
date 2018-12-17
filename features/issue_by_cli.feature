@@ -4,6 +4,7 @@ Feature: Create issue by bitmark-cli
 
   Background: I am a bitmark-cli user
     Given I have bitmark-cli config file
+    And some bitmarkds already working normally
 
   Scenario Outline: Issue digital asset(s)
     Given I have digital asset name <asset name>

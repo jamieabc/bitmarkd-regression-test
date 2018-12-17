@@ -5,9 +5,6 @@ Given(/^some bitmarkds already working normally$/) do
   switch_cli_file_to_normal
   bm_status = get_bitmarkd_status
   expect(bm_status).to eq("Normal")
-
-  # target backup one
-  switch_cli_file_to_backup
 end
 
 Given(/^I clean start a bitmarkd$/) do
@@ -48,6 +45,11 @@ end
 Then(/^forked bitmarkd will have same records as other nodes$/) do
   same = same_blockchain? 5, 4
   expect(same).to be_truthy
+end
+
+Before("@sync_first_scenario") do
+  # target backup one
+  switch_cli_file_to_backup
 end
 
 # change cli file to use normal bitmarkd

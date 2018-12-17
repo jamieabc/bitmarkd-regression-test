@@ -6,6 +6,7 @@ Feature: Create tx by bitmark-cli
     Given I have bitmark-cli config file
     And wallet has enough balance to pay
     And I have a friend "Foo" with bitmark account
+    And some bitmarkds already working normally
     
   Scenario: Unratified transfer digital asset to my friend
     Given I have asset name "The Starry Night" on blockchain

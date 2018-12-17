@@ -73,7 +73,11 @@ def do_prev_issue
 end
 
 def set_tx_id_from_response
-  raise "Issue failed with message #{@cli_result}" if !@cli_result
+  # raise error is empty or error message
+  if @cli_result.empty? || @cli_result.include?("error")
+    raise "Issue failed with message #{@cli_result}"
+  end
+
   json = JSON.parse(@cli_result)
   @tx_id = json["issueIds"].first
 end

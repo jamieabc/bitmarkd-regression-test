@@ -6,6 +6,7 @@ Feature: Sync data from network
     Given I have bitmark-cli config file
     And some bitmarkds already working normally
     
+  @sync_first_scenario
   Scenario: Bitmarkd sync data form network
     Given I clean start a bitmarkd
     When my newly started bitmarkd is working normally
