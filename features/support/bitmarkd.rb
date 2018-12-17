@@ -108,7 +108,7 @@ end
 
 # by experience, it takes 30 seconds for bitmarkd to start
 def bitmarkd_start_time_sec
-  30
+  100
 end
 
 # by experience, it takes 5 seconds for bitmarkd to stop
