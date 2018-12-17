@@ -1,10 +1,15 @@
 def get_bitmarkd_status
   # only show cli command once
   if @cli_result.nil?
-    puts "cli cmd: #{cli_default_user_cmd} bitmarkInfo"
+    puts "cli cmd: #{cli_default_user_cmd} bitmarkInfo 2>&1"
   end
 
-  @cli_result = `#{cli_default_user_cmd} bitmarkInfo`
+  @cli_result = `#{cli_default_user_cmd} bitmarkInfo 2>&1`
+  if @cli_result.empty? || @cli_result.include?("error")
+    puts "cli unormal result: #{@cli_result}"
+    return ""
+  end
+
   json = JSON.parse(@cli_result)
   json["mode"]
 end
@@ -28,8 +33,8 @@ def start_bitmarkd_cmd(bitmarkd_number)
 end
 
 def wait_until_bitmarkd_status(exp_status)
-  status = get_bitmarkd_status
   start = Time.now
+  status = get_bitmarkd_status
 
   # wait at most 100 seconds, each time for 10 seconds
   iterate_count = 10
@@ -37,6 +42,7 @@ def wait_until_bitmarkd_status(exp_status)
   loop do
     status = get_bitmarkd_status
     break if exp_status == status || iterate_count < 0
+
     iterate_count -= 1
     sleep 10
   end
