@@ -37,7 +37,7 @@ cp ~/conf/cli4.conf ~/${regression_dir}/
 # run test cases
 cd ~/${regression_dir}
 echo running cucumber...
-cucumber --format json -o ~/${result_file}
+cucumber --fail-fast --format json_pretty -o ~/${result_file}
 
 # check cucumber status
 if [ $? -ne 0 ]; then
