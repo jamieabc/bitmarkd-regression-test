@@ -33,13 +33,13 @@ def meta_separator
 end
 
 def tx_id_args(id)
-  "--txid #{id}"
+  "-t #{id}"
 end
 
 def counter_sign_tx_args(id:, receiver:)
-  "#{tx_id_args id} --receiver #{receiver}"
+  "#{tx_id_args id} -r #{receiver}"
 end
 
 def unratified_tx_args(id:, receiver:)
-  "-u #{tx_id_args id} --receiver #{receiver}"
+  "-u #{tx_id_args id} -r #{receiver}"
 end

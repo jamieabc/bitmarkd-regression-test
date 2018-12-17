@@ -75,7 +75,7 @@ def do_counter_sign_receive(receiver)
   json = JSON.parse(@cli_result)
   tx_hex = json["transfer"]
   cli_base_cmd = cli_user_cmd user: receiver, password: @cli_password
-  @cli_result = `#{cli_base_cmd} countersign --transfer #{tx_hex}`
+  @cli_result = `#{cli_base_cmd} countersign -t #{tx_hex} 2>&1`
 end
 
 def do_transfer(receiver:, counter_sign:)
