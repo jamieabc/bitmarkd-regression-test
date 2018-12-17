@@ -38,7 +38,16 @@ Then(/^I have valid asset stored on blockchain$/) do
 end
 
 Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_name, exp_amount, exp_key, exp_value|
-  expect(@issued["result"]["assets"].first["data"]["name"]).to eq(exp_name)
+  result = @issued["result"]
+  asset = result ? result["assets"].first : nil
+  data = asset ? asset["data"] : nil
+
+  if data.nil?
+    puts "issued result: #{@issued}"
+    raise "Error issue record."
+  end
+
+  expect(data["name"]).to eq(exp_name)
 
   exp_meta_str = returned_meta_str(exp_key, exp_value)
 
