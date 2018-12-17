@@ -32,7 +32,7 @@ When(/^pay for transfer fee$/) do
 end
 
 When(/^wait transfer become valid$/) do
-  wait_until_tx_status id: @pay_tx_id, exp_status: "confirmed"
+  wait_until_issue_tx_status id: @pay_tx_id, exp_status: "confirmed"
 end
 
 When(/^I counter-sign transfer asset to my friend "(.*)"$/) do |friend|

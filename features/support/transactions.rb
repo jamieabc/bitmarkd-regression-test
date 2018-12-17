@@ -1,6 +1,6 @@
 require "pry"
 
-def wait_until_tx_status(id:, exp_status:)
+def wait_until_issue_tx_status(id:, exp_status:)
   # mine some blocks, make sure transfer is confirmed
   mine_block(6)
   puts "wait tx #{id} to become #{exp_status}..."
@@ -31,20 +31,6 @@ def check_tx_status(id:, exp_status:)
   puts "wait tx id #{id} become #{exp_status} takes #{finish - start} seconds"
 
   resp_status
-end
-
-def open_ssl_socket
-  socket = TCPSocket.new(host_ip, host_port)
-  ssl = OpenSSL::SSL::SSLSocket.new(socket)
-  ssl.sync_close = true
-  ssl.connect
-  ssl
-end
-
-def rpc_query_issued_data
-  ssl = open_ssl_socket
-  ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{@fingerprint}\"]}]}"
-  @issued = JSON.parse(ssl.gets)
 end
 
 def get_identity(provenance:, idx:)

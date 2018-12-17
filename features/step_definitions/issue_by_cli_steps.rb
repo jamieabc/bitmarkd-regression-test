@@ -1,8 +1,3 @@
-gem "openssl"
-require "openssl"
-require "socket"
-require "rspec"
-
 Given(/^I have digital asset name "(.*)"$/) do |name|
   @asset_name = name
 end
@@ -25,7 +20,7 @@ end
 When(/^I issue first time and wait for it become valid$/) do
   do_new_issue
   set_tx_id_from_response
-  wait_until_tx_status id: @tx_id, exp_status: "confirmed"
+  wait_until_issue_tx_status id: @tx_id, exp_status: "confirmed"
 end
 
 When(/^I issue same asset second time$/) do
@@ -34,7 +29,7 @@ end
 
 Then(/^I have valid asset stored on blockchain$/) do
   set_tx_id_from_response
-  wait_until_tx_status id: @tx_id, exp_status: "confirmed"
+  wait_until_issue_tx_status id: @tx_id, exp_status: "confirmed"
 end
 
 Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_name, exp_amount, exp_key, exp_value|

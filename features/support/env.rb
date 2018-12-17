@@ -1,3 +1,5 @@
+require "rspec"
+
 def setup_variables
   @cli_identity = "regression test user"
   @me = @cli_identity
