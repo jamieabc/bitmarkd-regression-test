@@ -54,6 +54,10 @@ end
 After("@sync_last_scenario") do
   start_bitmarkd(4)
   start_bitmarkd(5)
+
+  # wait for some time
+  sleep bitmarkd_start_time_sec
+
   wait_until_bitmarkd_status("Normal")
   switch_cli_file_to_normal
 end
