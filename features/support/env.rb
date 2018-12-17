@@ -20,6 +20,10 @@ def setup_variables
   @provenance = nil
 
   @os = `uname`.gsub(/\n/, "")
+  @home_path = ENV["HOME"]
+  @go_path = ENV["GOPATH"]
+  @go_bin_path = @go_path + "/bin"
+
   reset_issue_args
 end
 

@@ -91,7 +91,7 @@ end
 
 def bitmarkd_path(bitmarkd_number)
   if is_os_freebsd
-    "~/.config/bitmarkd#{bitmarkd_number}"
+    "${@home_dir}/.config/bitmarkd#{bitmarkd_number}"
   else
     ".config/bitmarkd#{bitmarkd_number}"
   end
@@ -99,20 +99,21 @@ end
 
 # should use GOPATH, but it will be replaced by host computer
 def bitmarkd_executable
-  "#{go_bin_path}/bitmarkd"
+  "#{@go_bin_path}/bitmarkd"
 end
 
 def dumpdb_exec
-  "#{go_bin_path}/bitmark-dumpdb"
-end
-
-def go_bin_path
-  "~/gocode/bin"
+  "#{@go_bin_path}/bitmark-dumpdb"
 end
 
 # by experience, it takes 30 seconds for bitmarkd to start
 def bitmarkd_start_time_sec
   30
+end
+
+# by experience, it takes 5 seconds for bitmarkd to stop
+def bitmarkd_stop_time_sec
+  5
 end
 
 def dump_db_cmd(bitmarkd_number)
@@ -124,8 +125,8 @@ end
 def dump_db_tx(bitmarkd_number)
   stop_bitmarkd bitmarkd_number
 
-  # wait 3 seconds for bitmarkd to stop
-  sleep 3
+  # wait 5 seconds for bitmarkd to stop
+  sleep bitmarkd_stop_time_sec
 
   cmd = double_quote_str(dump_db_cmd(bitmarkd_number) + " T")
 
@@ -133,7 +134,7 @@ def dump_db_tx(bitmarkd_number)
     cmd = ssh_cmd + " " + cmd
   end
 
-  result = `#{cmd}`
+  result = `#{cmd} 2>&1`
 
   start_bitmarkd bitmarkd_number
 
