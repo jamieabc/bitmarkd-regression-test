@@ -91,7 +91,7 @@ end
 
 def bitmarkd_path(bitmarkd_number)
   if is_os_freebsd
-    "${@home_dir}/.config/bitmarkd#{bitmarkd_number}"
+    "#{@home_path}/.config/bitmarkd#{bitmarkd_number}"
   else
     ".config/bitmarkd#{bitmarkd_number}"
   end
