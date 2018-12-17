@@ -7,7 +7,8 @@ repo="https://git.bitmark.com:8080/system/bitmarkd-regression-test.git"
 ERROR_CODE=1
 
 # setup env variable
-export PATH=~/gocode/bin:$PATH
+export GOPATH=~/gocode
+export PATH=${GOPATH}/bin:$PATH
 
 printf "\nRemoving previous result...\n"
 if [ -f ~/${result_file} ]; then
