@@ -3,8 +3,7 @@ require "pry"
 Given(/^some bitmarkds already working normally$/) do
   # check normal status
   switch_cli_file_to_normal
-  bm_status = get_bitmarkd_status
-  expect(bm_status).to eq("Normal")
+  wait_until_bitmarkd_status("Normal")
 end
 
 Given(/^I clean start a bitmarkd$/) do
