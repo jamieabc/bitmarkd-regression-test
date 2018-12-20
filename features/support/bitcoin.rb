@@ -8,7 +8,7 @@ def get_btc
   `#{btc_cli_base_cmd} sendtoaddress #{btc_address} 50`
 
   # make sure record is put onto blockchain
-  mine_block(3)
+  mine_block(6)
 end
 
 # this value needs to be synced with wallet address
