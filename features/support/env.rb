@@ -36,11 +36,15 @@ def reset_issue_args
 end
 
 def host_port
-  "2230"
+  "2330"
 end
 
 def host_ip
-  "172.16.23.113"
+  if is_os_freebsd
+    "172.16.23.113"
+  else
+    "127.0.0.1"
+  end
 end
 
 def cli_url
