@@ -17,7 +17,7 @@ def btc_address
 end
 
 def mine_block(count)
-  `#{btc_cli_base_cmd} generate #{count}`
+  `#{btc_cli_base_cmd} generatetoaddress #{count} $(bitcoin-cli getnewaddress)`
 end
 
 def btc_cli_base_cmd
