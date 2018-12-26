@@ -24,8 +24,8 @@ def do_issue(again: false)
   @cli_result = nil
   # generate new issue or use previous one
   if again && !@prev_cli_cmd.nil?
-    cmd = @prev_cli_cmd
     # clear previous existing result
+    cmd = @prev_cli_cmd
   else
     cmd = cli_create_issue
     @prev_cli_cmd = cli_create_issue

@@ -1,3 +1,5 @@
+require "faker"
+
 def cli_setup_args
   "-n #{@cli_network} -x #{cli_url} -d #{@cli_description}"
 end
@@ -7,12 +9,12 @@ def cli_create_issue_args
 end
 
 def asset_args
-  return "-a '#{@asset_name}'" if @asset_name
+  return "-a \"#{@asset_name}\"" if @asset_name
 end
 
 def fingerprint
   @fingerprint = Time.now.getutc.to_s
-  "'#{@fingerprint}'"
+  "'#{@fingerprint} #{Faker::Lorem.word}'"
 end
 
 def meta_args
