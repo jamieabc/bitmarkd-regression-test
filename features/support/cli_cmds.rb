@@ -28,7 +28,7 @@ def do_issue(again: false)
     cmd = @prev_cli_cmd
   else
     cmd = cli_create_issue
-    @prev_cli_cmd = cli_create_issue
+    @prev_cli_cmd = cmd
   end
 
   puts "issue command: #{cmd}"
