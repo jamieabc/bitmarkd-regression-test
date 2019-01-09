@@ -17,10 +17,6 @@ end
 def stop_bitmarkd(bitmarkd_number)
   cmd = "pgrep -f bitmarkd#{bitmarkd_number} | xargs kill"
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + double_quote_str(cmd)
-  end
-
   @ssh_result = `#{cmd}`
 end
 
@@ -67,10 +63,6 @@ def start_bitmarkd(bitmarkd_number)
   bg_start_cmd = "nohup #{start_cmd} &"
   cmd = enter_bitmarkd_dir_cmd(bitmarkd_number) + "; " + bg_start_cmd
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + double_quote_str(cmd)
-  end
-
   @ssh_result = `#{cmd}`
 end
 
@@ -82,19 +74,11 @@ def clean_bitmarkd_data(bitmarkd_number)
   path = bitmarkd_path bitmarkd_number
   cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + double_quote_str(cmd)
-  end
-
   @ssh_result = `#{cmd}`
 end
 
 def bitmarkd_path(bitmarkd_number)
-  if is_os_freebsd
-    "#{@home_path}/.config/bitmarkd#{bitmarkd_number}"
-  else
-    ".config/bitmarkd#{bitmarkd_number}"
-  end
+  "#{@home_path}/.config/bitmarkd#{bitmarkd_number}"
 end
 
 # should use GOPATH, but it will be replaced by host computer
@@ -130,10 +114,6 @@ def dump_db_tx(bitmarkd_number)
 
   cmd = double_quote_str(dump_db_cmd(bitmarkd_number) + " T")
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + cmd
-  end
-
   result = `#{cmd} 2>&1`
 
   start_bitmarkd bitmarkd_number
@@ -155,10 +135,6 @@ end
 def check_backup_data_exist?(bitmarkd_number)
   cmd = "ls #{bitmarkd_path bitmarkd_number}/#{data_backup_dir}"
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + double_quote_str(cmd)
-  end
-
   result = `#{cmd}`
 
   raise "#{backup_dir} not exist" if result.include? "No such file or directory"
@@ -173,9 +149,6 @@ def change_data_to_backup(bitmarkd_number)
 
   cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
 
-  if !is_os_freebsd
-    cmd = ssh_cmd + " " + double_quote_str(cmd)
-  end
   puts "cmd: #{cmd}"
 
   puts "restore bitmarkd#{bitmarkd_number} previous #{data_backup_dir} directory to data"
