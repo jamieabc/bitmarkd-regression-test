@@ -79,3 +79,7 @@ end
 def data_backup_dir
   "data-backup"
 end
+
+def wait_tx_limit_sec
+  60 * 10
+end

@@ -3,7 +3,7 @@ require "pry"
 def wait_until_issue_tx_status(id:, exp_status:)
   # mine some blocks, make sure transfer is confirmed
   mine_block(6)
-  puts "wait tx #{id} to become #{exp_status}..."
+  puts "wait tx #{id} become #{exp_status}..."
   status = check_tx_status(id: id, exp_status: exp_status)
 
   raise "issue #{id} status not #{exp_status}" if status.downcase != exp_status
@@ -22,13 +22,17 @@ def check_tx_status(id:, exp_status:)
     iterate_count += 1
     if json && json["status"]
       resp_status = json["status"]
-      break if (resp_status.casecmp? exp_status) || iterate_count == 40
+      break if (resp_status.casecmp? exp_status) || iterate_count * 10 == wait_tx_limit_sec
     end
 
     sleep 10
   end
   finish = Time.now
-  puts "wait tx id #{id} become #{exp_status} takes #{finish - start} seconds"
+  if iterate_count * 10 == wait_tx_limit_sec
+    puts "time limit exceed"
+  else
+    puts "takes #{finish - start} seconds"
+  end
 
   resp_status
 end
