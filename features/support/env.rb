@@ -83,3 +83,7 @@ end
 def wait_tx_limit_sec
   60 * 10
 end
+
+def sleep_unit_sec
+  10
+end
