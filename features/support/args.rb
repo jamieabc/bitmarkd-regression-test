@@ -5,7 +5,7 @@ def cli_setup_args
 end
 
 def cli_create_issue_args
-  "#{asset_args} #{meta_args} -f #{fingerprint}"
+  "#{asset_args} #{meta_args} -f \"#{fingerprint}\""
 end
 
 def asset_args
@@ -15,7 +15,7 @@ end
 def fingerprint
   word = Faker::Lorem.word
   time = Time.now.getutc.to_s
-  @fingerprint = "\"#{time} #{word}\""
+  @fingerprint = "#{time} #{word}"
 end
 
 def meta_args
