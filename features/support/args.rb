@@ -13,8 +13,9 @@ def asset_args
 end
 
 def fingerprint
-  @fingerprint = Time.now.getutc.to_s
-  "'#{@fingerprint} #{Faker::Lorem.word}'"
+  word = Faker::Lorem.word
+  time = Time.now.getutc.to_s
+  @fingerprint = "\"#{time} #{word}\""
 end
 
 def meta_args
