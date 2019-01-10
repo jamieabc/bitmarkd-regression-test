@@ -16,7 +16,6 @@ def setup_variables
   @cli_description = "test"
 
   @cli_result = nil
-  @ssh_result = nil
 
   @pay_tx_id = nil
   @provenance = nil
@@ -71,19 +70,28 @@ def is_os_freebsd
   @os == "FreeBSD"
 end
 
-# assume .ssh/config with settings of server freebuilder, no need to type pass phrase
-def ssh_cmd
-  "ssh free"
-end
-
 def data_backup_dir
   "data-backup"
+end
+
+def data_dir
+  "data"
 end
 
 def wait_tx_limit_sec
   60 * 10
 end
 
-def sleep_unit_sec
+def sleep_interval_sec
   10
+end
+
+# by experience, it takes 5 seconds for bitmarkd to stop
+def bitmarkd_stop_time_sec
+  5
+end
+
+# by experience, it takes 120 seconds for bitmarkd start into normal mode
+def bitmarkd_start_time_sec
+  120
 end

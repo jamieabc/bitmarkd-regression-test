@@ -6,43 +6,46 @@ Given(/^some bitmarkds already working normally$/) do
   wait_until_bitmarkd_status("Normal")
 end
 
-Given(/^I clean start a bitmarkd$/) do
-  stop_bitmarkd(4)
-  clean_bitmarkd_data(4)
+Given(/^clean start one bitmarkd$/) do
+  bm_num = 4
+  stop_bitmarkd(bm_num)
+  clean_bitmarkd_data(bm_num)
 end
 
-When(/^my newly started bitmarkd is working normally$/) do
-  start_bitmarkd(4)
+When(/^newly started bitmarkd works in "(.*)" mode$/) do |mode|
+  bm_num = 4
+  start_bitmarkd(bm_num)
 
-  # bitmarkd take some time to start
-  puts "wait #{bitmarkd_start_time_sec}"
-  sleep bitmarkd_start_time_sec
-
-  wait_until_bitmarkd_status("Normal")
+  wait_until_bitmarkd_status(mode)
 end
 
-Then(/^my newly started bitmarkd should have same data as other nodes$/) do
-  same = same_blockchain? 5, 4
+Then(/^newly started bitmarkd should have same data as others$/) do
+  bm_num = 4
+  same = same_blockchain?(5, bm_num)
   expect(same).to be_truthy
 end
 
-Given(/^my bitmarkd has forked blockchain history$/) do
-  stop_bitmarkd(4)
-  change_data_to_backup(4)
+Given(/^specific bitmarkd with same chain length bug different data than others$/) do
+  bm_num = 4
+  stop_bitmarkd(bm_num)
+  change_data_to_backup(bm_num)
+  truncate_bitmarkd_to_consistent_chain_length(bm_num)
 end
 
-When(/^forked bitmarkd is working normally$/) do
-  start_bitmarkd(4)
+When(/^specific bitmarkd works in "(.*)" mode$/) do
+  bm_num = 4
+  start_bitmarkd(bm_num)
 
-  # bitmarkd take some time to start
-  puts "wait #{bitmarkd_start_time_sec}"
+  # bitmarkd takes some time to start
+  puts "wait #{bitmarkd_start_time_sec} seconds for bitmarkd #{bm_num} to start"
   sleep bitmarkd_start_time_sec
 
-  wait_until_bitmarkd_status("Normal")
+  wait_until_bitmarkd_status(mode)
 end
 
-Then(/^forked bitmarkd will have same records as other nodes$/) do
-  same = same_blockchain? 5, 4
+Then(/^specific bitmarkd with same data as others$/) do
+  bm_num = 4
+  same = same_blockchain?(5, bm_num)
   expect(same).to be_truthy
 end
 

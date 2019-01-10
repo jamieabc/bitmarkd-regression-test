@@ -1,22 +1,26 @@
-def cli_default_user_cmd
-  cli_user_cmd(user: @cli_identity, password: @cli_password)
-  # "#{cli_base_cmd} -i '#{@cli_identity}' -p #{@cli_password}"
+def cli_default_conf_cmd
+  "#{cli_cmd config: @cli_file, identity: @cli_identity}"
 end
 
-def cli_user_cmd(user:, password:)
-  "#{cli_base_cmd} -i '#{user}' -p '#{password}'"
+def cli_cmd(config:, identity:)
+  args = cli_config_args config: config, identity: identity
+  "#{cli_base_cmd} #{args}"
 end
 
 def cli_base_cmd
-  "bitmark-cli -c #{@cli_file}"
+  "bitmark-cli"
+end
+
+def cli_bitmarkd_status_cmd(config:, identity:)
+  "#{cli_cmd config: config, identity: identity} bitmarkInfo 2>&1"
 end
 
 def cli_setup_command
-  "#{cli_default_user_cmd} setup #{cli_setup_args}"
+  "#{cli_default_conf_cmd} setup #{cli_setup_args}"
 end
 
 def cli_get_users
-  resp = JSON.parse(`#{cli_default_user_cmd} info`)
+  resp = JSON.parse(`#{cli_default_conf_cmd} info`)
   resp["identities"].map { |i| i["name"] }
 end
 
@@ -38,13 +42,13 @@ def do_issue(again: false)
 end
 
 def cli_create_issue
-  "#{cli_default_user_cmd} create #{cli_create_issue_args} 2>&1"
+  "#{cli_default_conf_cmd} create #{cli_create_issue_args} 2>&1"
 end
 
 def cli_get_tx_status(id)
-  `#{cli_default_user_cmd} status #{tx_id_args id}`
+  `#{cli_default_conf_cmd} status #{tx_id_args id}`
 end
 
 def cli_get_provenance(id)
-  `#{cli_default_user_cmd} provenance #{tx_id_args id}`
+  `#{cli_default_conf_cmd} provenance #{tx_id_args id}`
 end

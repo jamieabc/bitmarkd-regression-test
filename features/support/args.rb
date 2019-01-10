@@ -4,6 +4,10 @@ def cli_setup_args
   "-n #{@cli_network} -x #{cli_url} -d #{@cli_description}"
 end
 
+def cli_config_args(config:, identity:)
+  "-c #{config} -i '#{identity}' -p #{@cli_password}"
+end
+
 def cli_create_issue_args
   "#{asset_args} #{meta_args} -f \"#{fingerprint}\""
 end

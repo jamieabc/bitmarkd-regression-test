@@ -27,7 +27,7 @@ def check_tx_status(id:, exp_status:)
       break if (resp_status.casecmp? exp_status) || tx_limit_exceed
     end
 
-    sleep sleep_unit_sec
+    sleep sleep_interval_sec
   end
   finish = Time.now
   if tx_limit_exceed
@@ -40,7 +40,7 @@ def check_tx_status(id:, exp_status:)
 end
 
 def tx_limit_exceed?(iteration)
-  iteration * sleep_unit_sec >= wait_tx_limit_sec
+  iteration * sleep_interval_sec >= wait_tx_limit_sec
 end
 
 def get_identity(provenance:, idx:)

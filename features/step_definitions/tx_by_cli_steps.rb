@@ -74,14 +74,14 @@ end
 def do_counter_sign_receive(receiver)
   json = JSON.parse(@cli_result)
   tx_hex = json["transfer"]
-  cli_base_cmd = cli_user_cmd user: receiver, password: @cli_password
-  @cli_result = `#{cli_base_cmd} countersign -t #{tx_hex} 2>&1`
+  cmd = cli_cmd config: @cli_file_normal, identity: receiver
+  @cli_result = `#{cmd} countersign -t #{tx_hex} 2>&1`
 end
 
 def do_transfer(receiver:, counter_sign:)
   arg = tx_args(receiver: receiver, counter_sign: counter_sign)
-  puts "\ntx cmd: #{cli_default_user_cmd} transfer #{arg}\n"
-  @cli_result = `#{cli_default_user_cmd} transfer #{arg} 2>&1`
+  puts "\ntx cmd: #{cli_default_conf_cmd} transfer #{arg}\n"
+  @cli_result = `#{cli_default_conf_cmd} transfer #{arg} 2>&1`
 end
 
 def tx_args(receiver:, counter_sign:)
