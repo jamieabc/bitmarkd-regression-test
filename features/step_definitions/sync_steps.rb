@@ -25,7 +25,16 @@ Then(/^newly started bitmarkd should have same data as others$/) do
   expect(same).to be_truthy
 end
 
-Given(/^specific bitmarkd with same chain length bug different data than others$/) do
+Given(/^specific bitmarkd has longer chain than rest of others$/) do
+end
+
+Given(/^other bitmarkd connects to specific bitmarkd and works in "normal" mode$/) do
+end
+
+Given(/^other bitmarkd with same chain data as specific bitmarkd$/) do
+end
+
+Given(/^specific bitmarkd with same chain length but different data than others$/) do
   bm_num = 4
   stop_bitmarkd(bm_num)
   change_data_to_backup(bm_num)
