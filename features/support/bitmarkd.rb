@@ -28,8 +28,9 @@ end
 # the lock behavior happens at listener.go, I plan to solve it in the
 # future, but as now, when it happens, use "kill -SIGKILL" to force terminate
 def stop_bitmarkd(bitmarkd_number)
+  return if bitmarkd_stopped?(bitmarkd_number)
   kill_process(name: "bitmarkd#{bitmarkd_number}", force: false)
-  return if bitmarkd_stopped? bitmarkd_number
+  return if bitmarkd_stopped?(bitmarkd_number)
   sleep bitmarkd_stop_time_sec
   kill_process(name: "bitmarkd#{bitmarkd_number}", force: true)
 end
