@@ -59,11 +59,7 @@ def switch_cli_file_to_backup
 end
 
 def switch_cli_file(mode)
-  if mode == "normal"
-    @cli_file = @cli_file_normal if mode == "normal"
-  else
-    @cli_file = @cli_file_backup
-  end
+  @cli_file = (mode == "normal") ? @cli_file_normal : @cli_file_backup
 end
 
 def is_os_freebsd
