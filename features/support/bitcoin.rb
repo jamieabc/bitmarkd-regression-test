@@ -3,23 +3,23 @@
 
 # remember to put bitcoin.conf into default directory,
 # or set datadir in bitcoin-cli arguments
+class BTC
+  attr_reader :addr
 
-def get_btc
-  `#{btc_cli_base_cmd} sendtoaddress #{btc_address} 50`
+  def initialize(addr)
+    @@conf = "bitcoin.conf"
+    @@cmd = "bitcoin-cli -conf=#{@@conf}"
+    @addr = addr
+  end
 
-  # make sure record is put onto blockchain
-  mine_block(6)
-end
+  def send_btc_to(addr)
+    `#{@@cmd} sendtoaddress #{addr} 50`
 
-# this value needs to be synced with wallet address
-def btc_address
-  "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd"
-end
+    # make sure record is put onto blockchain
+    self.class.mine
+  end
 
-def mine_block(count)
-  `#{btc_cli_base_cmd} generatetoaddress #{count} $(bitcoin-cli getnewaddress)`
-end
-
-def btc_cli_base_cmd
-  "bitcoin-cli -conf=bitcoin.conf"
+  def self.mine(blk_count = 6)
+    `#{@@cmd} generatetoaddress #{blk_count} $(bitcoin-cli getnewaddress)`
+  end
 end

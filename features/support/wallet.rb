@@ -1,37 +1,49 @@
-def minimum_required_balance
-  1e9                           # 10 btc
-end
+class Wallet
+  attr_reader :conf, :password, :ltc_conf, :min_btc_balance
 
-def wallet_address
-  "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd"
-end
-
-def beg_for_coins
-  balance = get_wallet_btc_balance
-  if balance < minimum_required_balance
-    get_btc
+  def initialize
+    @conf = "wallet.conf"
+    @password = "12345678"
+    @min_btc_balance = 1e9      #10 btc
   end
-end
 
-def get_wallet_btc_balance
-  resp = wallet_sync_balance
-  balance = get_balance_from_resp(resp)
-end
+  def exist?
+    File.exist? conf
+  end
 
-def get_balance_from_resp(resp)
-  resp.split("\n")
-    .select { |str| str.include? "Balance:" }.first
-    .split(" ")[1].to_i
-end
+  def prepare_btc_tokens
+    balance = btc_balance
+    retrieve_btc if balance < min_btc_balance
+  end
 
-def wallet_sync_balance
-  `#{wallet_base_cmd} btc sync -t`
-end
+  def btc_balance
+    resp = sync_btc_balance
+    parse_btc_balance(resp)
+  end
 
-def wallet_password
-  "WALLET_PASSWORD=#{@cli_password} "
-end
+  def parse_btc_balance(resp)
+    resp.split("\n")
+      .select { |str| str.include? "Balance:" }.first
+      .split(" ")[1].to_i
+  end
 
-def wallet_base_cmd
-  "#{wallet_password} bitmark-wallet -C #{@wallet_file}"
+  def sync_btc_balance
+    `#{base_cmd} btc sync -t`
+  end
+
+  def cmd_prefix
+    "WALLET_PASSWORD=#{password}"
+  end
+
+  def base_cmd
+    "#{cmd_prefix} bitmark-wallet -C #{conf}"
+  end
+
+  def self.btc_addr
+    "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd"
+  end
+
+  def self.ltc_addr
+    "mjPkDNakVA4w4hJZ6WF7p8yKUV2merhyCM"
+  end
 end

@@ -1,179 +1,281 @@
-def get_bitmarkd_status(config:, identity:)
-  cmd = cli_bitmarkd_status_cmd(config: config, identity: identity)
+gem "openssl"
+require "openssl"
+require "socket"
+require "rspec"
+require "pry"
+require_relative "cli"
+require_relative "bitcoin"
 
-  puts "cli cmd: #{cmd}"
+class Bitmarkd
+  attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
+    :data_backup_dir, :home_path, :go_path, :go_bin_path, :name
+  attr_accessor :prev_cmd, :asset_name, :asset_quantity, :asset_meta, :response,
+    :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance
 
-  @cli_result = `#{cmd}`
-  if @cli_result.empty? || @cli_result.include?("error")
-    puts "cli error result: #{@cli_result}"
-    return ""
+  include Cli
+
+  def initialize(bm_num:, port:)
+    @bm_num = bm_num
+    @name = "bitmarkd#{@bm_num}"
+    @port = port
+    @ip = is_os_freebsd ? "127.16.23" : "127.0.0.1"
+    @data_dir = "data"
+    @data_backup_dir = "data-backup"
+    @home_path = ENV["HOME"]
+    @go_path = ENV["GOPATH"]
+    @go_bin_path = "#{go_path}/bin"
+    init_cli
   end
 
-  JSON.parse(@cli_result)
-end
+  def status(hsh = {})
+    raise "#{name} stopped" if stopped?
+    identity = hsh.key?(:identity) ? hsh[:identity] : default_identity
+    cmd = bm_status_cmd(identity)
 
-# def delete_bitmarkd_to_same_block_height(bm_number)
-def truncate_bitmarkd_to_consistent_chain_length(bm_number)
-  status = get_bitmarkd_status(config: @cli_file_normal, identity: @cli_identity)
-  block_height = status["blocks"]
-  cd_cmd = enter_bitmarkd_dir_cmd bm_number
-  del_cmd = delete_bitmarkd_block_to_cmd(
-    block_number: block_height,
-    bitmarkd_number: bm_number,
-  )
-  `#{cd_cmd}; #{del_cmd}`
-end
+    resp = `#{cmd}`
+    if resp.empty? || resp.include?("error")
+      puts "status error response: #{resp}"
+      return ""
+    end
 
-# bitmarkd could possibly not respond to kill command
-# the lock behavior happens at listener.go, I plan to solve it in the
-# future, but as now, when it happens, use "kill -SIGKILL" to force terminate
-def stop_bitmarkd(bitmarkd_number)
-  return if bitmarkd_stopped?(bitmarkd_number)
-  kill_process(name: "bitmarkd#{bitmarkd_number}", force: false)
-  return if bitmarkd_stopped?(bitmarkd_number)
-  sleep bitmarkd_stop_time_sec
-  kill_process(name: "bitmarkd#{bitmarkd_number}", force: true)
-end
+    JSON.parse(resp)
+  end
 
-def kill_process(name:, force:)
-  cmd = "pgrep -f #{name} | xargs kill"
-  cmd << " -SIGKILL" if force == true
-  `#{cmd}`
-end
+  def truncate_chain_to_block(blk_num)
+    cd_cmd = enter_dir_cmd
+    del_cmd = "#{base_cmd} delete-down #{blk_num}"
 
-def bitmarkd_stopped?(number)
-  `pgrep -f bitmarkd#{number}`.empty?
-end
+    `#{cd_cmd}; #{del_cmd}`
+  end
 
-def enter_bitmarkd_dir_cmd(bitmarkd_number)
-  "cd #{bitmarkd_path bitmarkd_number}"
-end
+  # bitmarkd could possibly not respond to kill command
+  # the lock behavior happens at listener.go, I plan to solve it in the
+  # future, but as now, when it happens, use "kill -SIGKILL" to force terminate
+  def stop
+    return if stopped?
+    terminate(false)
+    return if stopped?
+    sleep self.class.stop_time
+    terminate(true)
+  end
 
-def delete_bitmarkd_block_to_cmd(block_number:, bitmarkd_number:)
-  "#{bitmarkd_executable} --config-file='bitmarkd#{bitmarkd_number} \
-  delete-down #{block_number}"
-end
+  def terminate(force)
+    cmd = "pgrep -f #{name} | xargs kill"
+    cmd << " -SIGKILL" if force == true
+    `#{cmd}`
+  end
 
-def start_bitmarkd_cmd(bitmarkd_number)
-  "#{bitmarkd_executable} --config-file='bitmarkd#{bitmarkd_number}.conf' \
+  def stopped?
+    `pgrep -f #{name}`.empty?
+  end
+
+  def enter_dir_cmd
+    "cd #{path}"
+  end
+
+  def start_cmd
+    "#{executable} --config-file='#{name}.conf' \
   start >/dev/null 2>&1"
-end
+  end
 
-def wait_until_bitmarkd_status(exp_mode)
-  puts "sleep #{bitmarkd_start_time_sec} seconds..."
-  sleep bitmarkd_start_time_sec
+  def wait_status(exp_mode)
+    raise "#{name} stopped" if stopped?
+    slept_time = 0
+    resp = nil
 
-  status = get_bitmarkd_status(
-    config: @cli_file_normal,
-    identity: @cli_identity,
-  )
-  mode = status["mode"]
+    while slept_time < self.class.start_time
+      resp = status
+      sleep self.class.sleep_interval if resp.empty?
+      mode = status["mode"]
+      break if exp_mode.casecmp?(mode)
+      slept_time += self.class.sleep_interval
+      sleep self.class.sleep_interval
+    end
 
-  puts "cli result: #{@cli_result}"
+    puts "#{name} cli result: #{resp}"
 
-  raise "bitmarkd mode #{mode} different from #{exp_mode}" unless exp_mode.casecmp?(mode)
-end
+    raise "wait #{slept_time}, #{mode} different from expected #{exp_mode}" unless exp_mode.casecmp?(mode)
+  end
 
-def get_bitmarkd_process_status(bitmarkd_number)
-  "pgrep -f bitmarkd#{bitmarkd_number}"
-end
+  def start
+    if stopped?
+      bg_start_cmd = "nohup #{start_cmd} &"
+      cmd = "#{enter_dir_cmd}; #{bg_start_cmd}"
 
-def start_bitmarkd(bitmarkd_number)
-  # return bitmarkd already started
-  return unless bitmarkd_stopped?(bitmarkd_number)
+      `#{cmd}`
+    end
 
-  start_cmd = start_bitmarkd_cmd(bitmarkd_number)
-  bg_start_cmd = "nohup #{start_cmd} &"
-  cmd = "#{enter_bitmarkd_dir_cmd(bitmarkd_number)}; #{bg_start_cmd}"
+    wait_status("normal")
+  end
 
-  `#{cmd}`
-end
+  def double_quote_str(str)
+    "\"#{str}\""
+  end
 
-def double_quote_str(str)
-  "\"#{str}\""
-end
+  def clean_bitmarkd_data
+    raise "#{name} not stopped" unless stopped?
+    cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
 
-def clean_bitmarkd_data(bitmarkd_number)
-  path = bitmarkd_path(bitmarkd_number)
-  cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
+    `#{cmd}`
+  end
 
-  `#{cmd}`
-end
+  def path
+    "#{@home_path}/.config/#{name}"
+  end
 
-def bitmarkd_path(bitmarkd_number)
-  "#{@home_path}/.config/bitmarkd#{bitmarkd_number}"
-end
+  def executable
+    "#{@go_bin_path}/bitmarkd"
+  end
 
-# should use GOPATH, but it will be replaced by host computer
-def bitmarkd_executable
-  "#{@go_bin_path}/bitmarkd"
-end
+  def dumpdb_exec
+    "#{@go_bin_path}/bitmark-dumpdb"
+  end
 
-def dumpdb_exec
-  "#{@go_bin_path}/bitmark-dumpdb"
-end
+  def dump_db_cmd
+    file_path = "#{path}/data/local"
+    "#{dumpdb_exec} --file=#{file_path}"
+  end
 
-def dump_db_cmd(bitmarkd_number)
-  bm_path = bitmarkd_path(bitmarkd_number)
-  file_path = "#{bm_path}/data/local"
-  "#{dumpdb_exec} --file=#{file_path}"
-end
+  def dump_db_tx
+    stop
 
-def dump_db_tx(bitmarkd_number)
-  stop_bitmarkd(bitmarkd_number)
+    # wait 5 seconds for bitmarkd to stop
+    sleep self.class.stop_time
 
-  # wait 5 seconds for bitmarkd to stop
-  sleep bitmarkd_stop_time_sec
+    cmd = double_quote_str("#{dump_db_cmd} T")
 
-  cmd = double_quote_str("#{dump_db_cmd(bitmarkd_number)} T")
+    result = `#{cmd} 2>&1`
+    start
+    result
+  end
 
-  result = `#{cmd} 2>&1`
+  def remove_unwanted_data(str)
+    truncate_length = str.index("\n") + 1
+    str[truncate_length..(-1 * truncate_length - 1)]
+  end
 
-  start_bitmarkd(bitmarkd_number)
+  def check_backup_data_exist?
+    cmd = "ls #{path}/#{data_backup_dir}"
 
-  result
-end
+    result = `#{cmd}`
 
-def same_db_record?(data1, data2)
-  db1 = remove_unwanted_data(data1)
-  db2 = remove_unwanted_data(data2)
-  db1 == db2
-end
+    raise "#{backup_dir} not exist" if result.include?("No such file or directory")
+  end
 
-def remove_unwanted_data(str)
-  truncate_length = str.index("\n") + 1
-  str[truncate_length..(-1 * truncate_length - 1)]
-end
+  def block_height
+    status["blocks"]
+  end
 
-def check_backup_data_exist?(bitmarkd_number)
-  cmd = "ls #{bitmarkd_path bitmarkd_number}/#{data_backup_dir}"
+  def change_data_to_backup
+    check_backup_data_exist?
 
-  result = `#{cmd}`
+    cd_cmd = enter_dir_cmd
+    rm_cmd = "rm -r #{data_dir}"
+    change_cmd = "cp -r #{data_backup_dir} #{data_dir}"
 
-  raise "#{backup_dir} not exist" if result.include?("No such file or directory")
-end
+    cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
 
-def change_data_to_backup(bitmarkd_number)
-  check_backup_data_exist?(bitmarkd_number)
+    puts "cmd: #{cmd}"
 
-  cd_cmd = enter_bitmarkd_dir_cmd(bitmarkd_number)
-  rm_cmd = "rm -r #{data_dir}"
-  change_cmd = "cp -r #{data_backup_dir} #{data_dir}"
+    puts "restore #{name}, #{data_backup_dir} to #{data_dir}"
+    `#{cmd}`
+  end
 
-  cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
+  def open_ssl_socket
+    socket = TCPSocket.new(ip, port)
+    ssl = OpenSSL::SSL::SSLSocket.new(socket)
+    ssl.sync_close = true
+    ssl.connect
+    ssl
+  end
 
-  puts "cmd: #{cmd}"
+  def issued_data
+    ssl = open_ssl_socket
+    ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{fingerprint}\"]}]}"
+    self.issued = JSON.parse(ssl.gets)
+  end
 
-  puts "restore bitmarkd#{bitmarkd_number}, #{data_backup_dir} to #{data_dir}"
-  `#{cmd}`
-end
+  def same_blockchain?(benchmark)
+    benchmark_db = benchmark.dump_db_tx
+    raise "Error empty result of bitamarkd #{benchmark} dump" if benchmark_db.empty?
 
-def same_blockchain?(benchmark, new)
-  benchmark_db = dump_db_tx(benchmark)
-  raise "Error empty result of bitamarkd #{benchmark} dump" if benchmark_db.empty?
+    new_db = dump_db_tx
+    raise "Error empty result of bitamarkd #{new} dump" if new_db.empty?
 
-  new_db = dump_db_tx(new)
-  raise "Error empty result of bitamarkd #{new} dump" if new_db.empty?
+    same_db?(benchmark_db, new_db)
+  end
 
-  same_db_record?(benchmark_db, new_db)
+  def same_db?(data1, data2)
+    db1 = remove_unwanted_data(data1)
+    db2 = remove_unwanted_data(data2)
+    db1 == db2
+  end
+
+  def wait_tx_status(id:, exp_status:)
+    # mine some blocks, make sure transfer is confirmed
+    BTC.mine
+    puts "wait tx #{id} become #{exp_status}..."
+    result = check_tx_status(id: id, exp_status: exp_status)
+
+    raise "issue #{id} status not #{exp_status}" if !(result.casecmp?(exp_status))
+
+    issued_data
+  end
+
+  def check_tx_status(id:, exp_status:)
+    # for i in 0..query_retry_count
+    start = Time.now
+    resp_status = nil
+    iterate_count = 0
+    tx_limit_exceed = false
+    loop do
+      json = JSON.parse(tx_status(id))
+      iterate_count += 1
+      if json && json["status"]
+        resp_status = json["status"]
+        tx_limit_exceed = tx_limit_exceed? iterate_count
+        break if resp_status.casecmp?(exp_status) || tx_limit_exceed
+      end
+
+      sleep Bitmarkd.sleep_interval
+    end
+    finish = Time.now
+    if tx_limit_exceed
+      puts "time limit exceed"
+    else
+      puts "takes #{finish - start} seconds"
+    end
+
+    resp_status
+  end
+
+  def tx_limit_exceed?(iteration)
+    iteration * Bitmarkd.sleep_interval >= Bitmarkd.tx_limit_time
+  end
+
+  def provenance_owner(idx:)
+    # make sure provenance is long enough
+    if provenance.length <= idx
+      puts "provenance: #{provenance}, target element index: #{idx}"
+      raise "Error, provenance is not long enough"
+    end
+    provenance[idx]["_IDENTITY"]
+  end
+
+  def provenance_history
+    resp = query_provenance(pay_tx_id)
+    self.provenance = JSON.parse(resp)["data"]
+  end
+
+  def self.sleep_interval
+    10
+  end
+
+  def self.start_time
+    120
+  end
+
+  def self.stop_time
+    5
+  end
 end
