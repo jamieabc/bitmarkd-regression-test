@@ -1,5 +1,7 @@
 Given(/^some bitmarkds already working normally$/) do
   @bm3.start
+  @bm4.start
+  @bm5.start
 end
 
 Given(/^clean start one bitmarkd$/) do
