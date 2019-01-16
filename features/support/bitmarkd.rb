@@ -18,7 +18,7 @@ class Bitmarkd
     @bm_num = bm_num
     @name = "bitmarkd#{@bm_num}"
     @port = port
-    @ip = is_os_freebsd ? "127.16.23" : "127.0.0.1"
+    @ip = is_os_freebsd ? "172.16.23.113" : "127.0.0.1"
     @data_dir = "data"
     @data_backup_dir = "data-backup"
     @home_path = ENV["HOME"]
