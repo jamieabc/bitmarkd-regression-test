@@ -6,9 +6,7 @@ Given(/^amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |amount, key, value|
   @bm3.asset_quantity = amount.length.zero? ? 0 : amount.to_i
 
   # initialized metadata hash
-  if @bm3.asset_meta.nil?
-    @bm3.asset_meta = {}
-  end
+  @bm3.asset_meta = {} if @bm3.asset_meta.nil?
 
   @bm3.asset_meta[key] = value
 end

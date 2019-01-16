@@ -31,7 +31,9 @@ Given(/^specific bitmarkd has longer chain than rest of others$/) do
 end
 
 Given(/^other bitmarkd connects to specific bitmarkd and works in "normal" mode$/) do
-  [@bm1, @bm2, @bm4].each do |bm|
+  # although bitmarkd3 is not stopped, re-connected bitmarkd 1 and 2 might cause
+  # it into resynchronise mode
+  [@bm1, @bm2, @bm3, @bm4].each do |bm|
     bm.start
   end
 end

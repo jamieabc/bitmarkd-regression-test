@@ -9,21 +9,19 @@ Given(/^I have bitmark-cli config file$/) do
 end
 
 Given(/^I have a friend "(.*)" with bitmark account$/) do |friend|
-  # create user if not exist
-  unless user_exist? friend
-    create_new_user friend
-  end
+  check_identity(friend)
 end
 
 Given(/^wallet has enough balance to pay$/) do
   raise "Error: wallet config file #{@wallet.file} not exist" unless @wallet.exist?
+
   @wallet.prepare_tokens(@btc)
   btc_balance = @wallet.btc_balance
 
   expect(btc_balance).to be >= @wallet.min_btc_balance
 end
 
-def user_exist?(name)
-  users = @bm3.identities
-  users.include? name
+def check_identity(id)
+  identities = @bm3.identities
+  raise "#{@bm3.name} doesn't have identity #{id}" unless identities.include?(id)
 end

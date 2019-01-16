@@ -89,18 +89,19 @@ class Bitmarkd
   def wait_status(exp_mode)
     raise "#{name} stopped" if stopped?
     slept_time = 0
+    sleep_int = self.class.sleep_interval
     resp = nil
 
     # for bitmarkd1 and bitmarkd2, it's the starting process, no need to wait it
     return if [1, 2].include?(bm_num)
 
     while slept_time < self.class.start_time
+      sleep sleep_int
+      slept_time += sleep_int
       resp = status
-      sleep self.class.sleep_interval if resp.empty?
+      continue if resp.empty?
       mode = status["mode"]
       break if exp_mode.casecmp?(mode)
-      slept_time += self.class.sleep_interval
-      sleep self.class.sleep_interval
     end
 
     puts "#{name} cli result: #{resp}"
