@@ -41,6 +41,10 @@ class Bitmarkd
     JSON.parse(resp)
   end
 
+  def normal?
+    "normal".casesmp?(status["mode"])
+  end
+
   def truncate_chain_to_block(blk_num)
     cd_cmd = enter_dir_cmd
     del_cmd = "#{base_cmd} delete-down #{blk_num}"

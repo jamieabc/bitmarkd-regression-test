@@ -17,7 +17,7 @@ end
 
 Given(/^wallet has enough balance to pay$/) do
   raise "Error: wallet config file #{@wallet.file} not exist" unless @wallet.exist?
-  @wallet.prepare_btc_tokens
+  @wallet.prepare_tokens(@btc)
   btc_balance = @wallet.btc_balance
 
   expect(btc_balance).to be >= @wallet.min_btc_balance
