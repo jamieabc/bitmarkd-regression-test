@@ -272,7 +272,7 @@ class Bitmarkd
   end
 
   def self.start_time
-    120
+    180
   end
 
   def self.stop_time
