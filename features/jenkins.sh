@@ -30,10 +30,6 @@ rm -rf ~/${regression_dir}
 echo cloning newest regression test cases
 git clone "${repo}"
 
-# copy conf file
-cp ~/conf/cli3.conf ~/${regression_dir}/
-cp ~/conf/cli4.conf ~/${regression_dir}/
-
 # run test cases
 cd ~/${regression_dir}
 echo running cucumber...
