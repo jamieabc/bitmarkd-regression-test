@@ -27,7 +27,7 @@ Given(/^specific bitmarkd has longer chain than rest of others$/) do
 end
 
 Given(/^other bitmarkd connects to specific bitmarkd and works in "normal" mode$/) do
-  %w(@bm1, @bm2, @bm4).each do |bm|
+  [@bm1, @bm2, @bm4].each do |bm|
     bm.start
   end
 end

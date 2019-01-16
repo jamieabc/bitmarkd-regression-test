@@ -19,8 +19,8 @@ module Cli
     end
 
     def reset_var_list
-      %w(@response, @issued, @fingerprint, @prev_cmd, @tx_id, @pay_tx_id,
-         @asset_name, @asset_quantity, @asset_meta , @provenance)
+      [@response, @issued, @fingerprint, @prev_cmd, @tx_id, @pay_tx_id,
+       @asset_name, @asset_quantity, @asset_meta, @provenance]
     end
 
     def cli
