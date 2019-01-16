@@ -42,7 +42,7 @@ class Bitmarkd
   end
 
   def normal?
-    "normal".casesmp?(status["mode"])
+    "normal".casecmp?(status["mode"])
   end
 
   def truncate_chain_to_block(blk_num)
