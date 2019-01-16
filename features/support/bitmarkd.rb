@@ -103,7 +103,7 @@ class Bitmarkd
       sleep self.class.sleep_interval
     end
 
-    puts "#{name} cli result: #{JSON.parse(resp)}"
+    puts "#{name} cli result: #{resp}"
 
     unless exp_mode.casecmp?(mode)
       raise "wait #{slept_time} seconds, mode #{mode} differs expected #{exp_mode}"
