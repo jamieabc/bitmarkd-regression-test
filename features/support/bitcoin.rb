@@ -12,8 +12,8 @@ class BTC
     @addr = addr
   end
 
-  def send_btc_to(addr)
-    `#{@@cmd} sendtoaddress #{addr} 50`
+  def send(custom_addr = addr)
+    `#{@@cmd} sendtoaddress #{custom_addr} 50`
 
     # make sure record is put onto blockchain
     self.class.mine

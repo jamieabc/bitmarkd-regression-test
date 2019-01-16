@@ -11,9 +11,9 @@ class Wallet
     File.exist? conf
   end
 
-  def prepare_btc_tokens
+  def prepare_tokens(crypto)
     balance = btc_balance
-    retrieve_btc if balance < min_btc_balance
+    crypto.send if balance < min_btc_balance
   end
 
   def btc_balance
