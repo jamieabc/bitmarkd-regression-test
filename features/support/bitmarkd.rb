@@ -10,7 +10,7 @@ class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
     :data_backup_dir, :home_path, :go_path, :go_bin_path, :name
   attr_accessor :prev_cmd, :asset_name, :asset_quantity, :asset_meta, :response,
-    :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance
+    :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance, :payments
 
   include Cli
 
@@ -103,9 +103,11 @@ class Bitmarkd
       sleep self.class.sleep_interval
     end
 
-    puts "#{name} cli result: #{resp}"
+    puts "#{name} cli result: #{JSON.parse(resp)}"
 
-    raise "wait #{slept_time} seconds, #{mode} different from expected #{exp_mode}" unless exp_mode.casecmp?(mode)
+    unless exp_mode.casecmp?(mode)
+      raise "wait #{slept_time} seconds, mode #{mode} differs expected #{exp_mode}"
+    end
   end
 
   def start

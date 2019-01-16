@@ -8,21 +8,11 @@ Given(/^I have asset name "(.*)" on blockchain$/) do |name|
 end
 
 When(/^I unratified transfer asset to my friend "(.*)"$/) do |friend|
-  do_unratified_tx_to(friend)
+  @bm3.transfer(receiver: friend, counter_sign: false)
 end
 
 When(/^pay for transfer fee$/) do
-  puts "cli result: #{@bm3.response}"
-  json = JSON.parse(@bm3.response)
-  @bm3.pay_tx_id = json["transferId"]
-  puts "bitmark payment tx id: #{@bm3.pay_tx_id}"
-  btc_pay_cmd = @wallet.cmd_prefix
-  btc_pay_cmd.concat(" ", json["commands"]["BTC"])
-  btc_pay_cmd.gsub!("${XDG_CONFIG_HOME}/bitmark-wallet/bitmark-wallet.conf", @wallet.conf)
-
-  # pay
-  pay_result = `#{btc_pay_cmd} 2>&1`
-  puts "btc payment tx id: #{JSON.parse(pay_result)["txId"]}"
+  @bm3.pay(wallet: @wallet, crypto: "BTC")
 end
 
 When(/^wait transfer become valid$/) do
@@ -31,18 +21,12 @@ When(/^wait transfer become valid$/) do
 end
 
 When(/^I counter-sign transfer asset to my friend "(.*)"$/) do |friend|
-  do_counter_sign_tx_to(friend)
+  @bm3.transfer(receiver: friend, counter_sign: true)
 end
 
 When(/^"(.*)" also counter-signs transfer$/) do |user|
-  do_counter_sign_receive(user)
+  @bm3.counter_sign(user)
 end
-
-# And "Foo" also counter-signs transfer
-# And pay for transfer fee
-# And wait transfer become valid
-# Then asset first owner is "me"
-# And asset latest owner is "Foo"
 
 Then(/^asset first owner is "(.*)"$/) do |owner|
   @bm3.provenance_history
@@ -56,36 +40,6 @@ Then(/^asset latest owner is "(.*)"$/) do |owner|
   latest_owner_idx = 0
   latest_owner = @bm3.provenance_owner(idx: latest_owner_idx)
   expect(latest_owner).to eq(get_owner(owner))
-end
-
-def do_unratified_tx_to(receiver)
-  do_transfer(receiver: receiver, counter_sign: false)
-end
-
-def do_counter_sign_tx_to(receiver)
-  do_transfer(receiver: receiver, counter_sign: true)
-end
-
-def do_counter_sign_receive(receiver)
-  json = JSON.parse(@bm3.response)
-  tx = json["transfer"]
-  cmd = @bm3.base_cmd(receiver)
-  @bm3.response = `#{cmd} countersign -t #{tx} 2>&1`
-end
-
-def do_transfer(receiver:, counter_sign:)
-  arg = tx_args(receiver: receiver, counter_sign: counter_sign)
-  cmd = @bm3.base_cmd
-  puts "\ntx cmd: #{cmd} transfer #{arg}\n"
-  @bm3.response = `#{cmd} transfer #{arg} 2>&1`
-end
-
-def tx_args(receiver:, counter_sign:)
-  if counter_sign == true
-    Bitmarkd.counter_sign_tx_args(id: @bm3.tx_id, receiver: receiver)
-  else
-    Bitmarkd.unratified_tx_args(id: @bm3.tx_id, receiver: receiver)
-  end
 end
 
 def get_owner(owner)

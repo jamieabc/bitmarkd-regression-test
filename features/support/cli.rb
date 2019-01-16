@@ -16,6 +16,8 @@ module Cli
 
     def reset_cli
       reset_var_list.each { |var| var = nil }
+      # initialize payment keys, it will be used to check if crypto payment is supported
+      @payments = {BTC: "", LTC: ""}
     end
 
     def reset_var_list
@@ -96,21 +98,73 @@ module Cli
     end
 
     def tx_status(id)
-      `#{cli_base_cmd} status #{self.class.tx_id_args(id)}`
+      `#{cli_base_cmd} status #{tx_id_args(id)}`
     end
 
     def query_provenance(id)
-      `#{cli_base_cmd} provenance #{self.class.tx_id_args(id)}`
+      `#{cli_base_cmd} provenance #{tx_id_args(id)}`
     end
 
     def url
       "#{ip}:#{port}"
     end
-  end
 
-  module ClassMethods
-    def tx_limit_time
-      60 * 10
+    def transfer(receiver:, counter_sign:)
+      args = (counter_sign == true) ?
+        counter_sign_tx_args(id: tx_id, receiver: receiver) :
+        unratified_tx_args(id: tx_id, receiver: receiver)
+      cmd = transfer_cmd(args)
+      self.response = JSON.parse(`#{cmd}`)
+      puts "transfer cli result:#{response}"
+      parse_transfer_response(counter_sign)
+    end
+
+    def pay(wallet:, crypto:)
+      raise "#{crypto} not support" if payments.keys.include?(crypto.upcase)
+      cmd = pay_cmd(wallet: wallet, crypto: crypto)
+      puts "pay command: #{cmd}"
+      resp = JSON.parse(`#{cmd}`)
+      crypto_tx_id = resp["txId"]
+      puts "#{crypto.upcase} payment transaction ID: #{crypto_tx_id}"
+    end
+
+    def pay_cmd(wallet:, crypto:)
+      default_wallet_conf = "${XDG_CONFIG_HOME}/bitmark-wallet/bitmark-wallet.conf"
+      sym = crypto.upcase.to_sym
+      wallet_cmd = payments[sym].gsub!(default_wallet_conf, wallet.conf)
+      "#{wallet.cmd_prefix} #{wallet_cmd} 2>&1"
+    end
+
+    # two transfer types has different response
+    # unratified transfer with bitmarkd ID, payment transaction ID, pay commands
+    # counter-sign transfer transfer ID for other ppl to counter-sign
+    def parse_transfer_response(counter_sign)
+      if counter_sign == true
+        self.tx_id = response["transfer"]
+      else
+        self.tx_id = response["bitmarkId"]
+        self.pay_tx_id = response["transferId"]
+        payments.keys.each { |key| self.payments[key] = response["commands"][key.to_s] }
+        puts "bitmark transfer ID: #{tx_id}, pay transfer ID: #{pay_tx_id}"
+      end
+    end
+
+    def counter_sign(receiver)
+      cmd = counter_sign_cmd(receiver)
+      puts "counter sign command: #{cmd}"
+      self.response = JSON.parse(`#{cmd}`)
+      puts "counter sign cli result: #{response}"
+      parse_transfer_response(false)
+    end
+
+    def counter_sign_cmd(receiver)
+      "#{cli_base_cmd(receiver)} countersign -t #{tx_id} 2>&1"
+    end
+
+    def transfer_cmd(args)
+      cmd = "#{cli_base_cmd} transfer #{args} 2>&1"
+      puts "transfer command: #{cmd}\n"
+      cmd
     end
 
     def tx_id_args(id)
@@ -118,12 +172,17 @@ module Cli
     end
 
     def counter_sign_tx_args(id:, receiver:)
-      "#{self.tx_id_args(id)} -r #{receiver}"
+      "#{tx_id_args(id)} -r #{receiver}"
     end
 
     def unratified_tx_args(**hsh)
-      # "-u #{self.class.tx_id_args(id)} -r #{receiver}"
-      "-u #{self.counter_sign_tx_args(hsh)}"
+      "-u #{counter_sign_tx_args(hsh)}"
+    end
+  end
+
+  module ClassMethods
+    def tx_limit_time
+      60 * 10
     end
   end
 end
