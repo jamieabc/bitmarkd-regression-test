@@ -20,7 +20,7 @@ end
 
 Given(/^specific bitmarkd has longer chain than rest of others$/) do
   # bitmarkd3 is longer than others
-  %w(@bm1, @bm2, @bm4).each do |bm|
+  [@bm1, @bm2, @bm4].each do |bm|
     bm.stop
     bm.truncate_chain_to_block(1)
   end
