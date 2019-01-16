@@ -45,9 +45,13 @@ class Bitmarkd
     "normal".casecmp?(status["mode"])
   end
 
+  def bm_base_cmd
+    "#{bm_exec} --config-file='#{name}.conf'"
+  end
+
   def truncate_chain_to_block(blk_num)
     cd_cmd = enter_dir_cmd
-    del_cmd = "#{base_cmd} delete-down #{blk_num}"
+    del_cmd = "#{bm_base_cmd} delete-down #{blk_num}"
 
     `#{cd_cmd}; #{del_cmd}`
   end
@@ -56,6 +60,7 @@ class Bitmarkd
   # the lock behavior happens at listener.go, I plan to solve it in the
   # future, but as now, when it happens, use "kill -SIGKILL" to force terminate
   def stop
+    puts "stopping #{name}..."
     return if stopped?
     terminate(false)
     return if stopped?
@@ -78,14 +83,16 @@ class Bitmarkd
   end
 
   def start_cmd
-    "#{executable} --config-file='#{name}.conf' \
-  start >/dev/null 2>&1"
+    "#{bm_base_cmd} start >/dev/null 2>&1"
   end
 
   def wait_status(exp_mode)
     raise "#{name} stopped" if stopped?
     slept_time = 0
     resp = nil
+
+    # for bitmarkd1 and bitmarkd2, it's the starting process, no need to wait it
+    return if [1, 2].include?(bm_num)
 
     while slept_time < self.class.start_time
       resp = status
@@ -98,10 +105,13 @@ class Bitmarkd
 
     puts "#{name} cli result: #{resp}"
 
-    raise "wait #{slept_time}, #{mode} different from expected #{exp_mode}" unless exp_mode.casecmp?(mode)
+    raise "wait #{slept_time} seconds, #{mode} different from expected #{exp_mode}" unless exp_mode.casecmp?(mode)
   end
 
   def start
+    puts "starting #{name}..."
+    puts "#{name} is already started..." unless stopped?
+
     if stopped?
       bg_start_cmd = "nohup #{start_cmd} &"
       cmd = "#{enter_dir_cmd}; #{bg_start_cmd}"
@@ -117,6 +127,7 @@ class Bitmarkd
   end
 
   def clean_bitmarkd_data
+    puts "clear #{name} data..."
     raise "#{name} not stopped" unless stopped?
     cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
 
@@ -127,7 +138,7 @@ class Bitmarkd
     "#{@home_path}/.config/#{name}"
   end
 
-  def executable
+  def bm_exec
     "#{@go_bin_path}/bitmarkd"
   end
 
@@ -221,7 +232,7 @@ class Bitmarkd
     puts "wait tx #{id} become #{exp_status}..."
     result = check_tx_status(id: id, exp_status: exp_status)
 
-    raise "issue #{id} status not #{exp_status}" if !(result.casecmp?(exp_status))
+    raise "issue #{id} status not #{exp_status}" unless result.casecmp?(exp_status)
 
     issued_data
   end
@@ -271,6 +282,8 @@ class Bitmarkd
     self.provenance = JSON.parse(resp)["data"]
   end
 
+  # below are class methods
+
   def self.sleep_interval
     10
   end
@@ -281,5 +294,9 @@ class Bitmarkd
 
   def self.stop_time
     5
+  end
+
+  def self.genesis_blk
+    1
   end
 end

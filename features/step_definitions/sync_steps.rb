@@ -21,8 +21,10 @@ end
 Given(/^specific bitmarkd has longer chain than rest of others$/) do
   # bitmarkd3 is longer than others
   [@bm1, @bm2, @bm4].each do |bm|
+    puts "stopping #{bm.name}..."
     bm.stop
-    bm.truncate_chain_to_block(1)
+    puts "truncate #{bm.name} block number to #{Bitmarkd.genesis_blk}"
+    bm.truncate_chain_to_block(Bitmarkd.genesis_blk)
   end
 end
 

@@ -27,16 +27,16 @@ module Cli
       "bitmark-cli"
     end
 
-    def base_cmd(identity = default_identity)
+    def cli_base_cmd(identity = default_identity)
       "#{cli} -c #{cli_conf} -i '#{identity}' -p #{password}"
     end
 
     def bm_status_cmd(identity)
-      "#{base_cmd(identity)} bitmarkInfo 2>&1"
+      "#{cli_base_cmd(identity)} bitmarkInfo 2>&1"
     end
 
     def identities
-      resp = JSON.parse(`#{base_cmd} info`)
+      resp = JSON.parse(`#{cli_base_cmd} info`)
       resp["identities"].map { |i| i["name"] }
     end
 
@@ -59,7 +59,7 @@ module Cli
     end
 
     def issue_cmd
-      "#{base_cmd} create #{issue_args} 2>&1"
+      "#{cli_base_cmd} create #{issue_args} 2>&1"
     end
 
     def issue_args
@@ -96,11 +96,11 @@ module Cli
     end
 
     def tx_status(id)
-      `#{base_cmd} status #{self.class.tx_id_args(id)}`
+      `#{cli_base_cmd} status #{self.class.tx_id_args(id)}`
     end
 
     def query_provenance(id)
-      `#{base_cmd} provenance #{self.class.tx_id_args(id)}`
+      `#{cli_base_cmd} provenance #{self.class.tx_id_args(id)}`
     end
 
     def url
