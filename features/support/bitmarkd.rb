@@ -107,7 +107,8 @@ class Bitmarkd
     puts "#{name} cli result: #{resp}"
 
     unless exp_mode.casecmp?(mode)
-      raise "wait #{slept_time} seconds, mode #{mode} differs expected #{exp_mode}"
+      raise "#{name} waits #{slept_time} seconds, " \
+            "mode #{mode} differs from expected #{exp_mode}"
     end
   end
 
@@ -292,7 +293,7 @@ class Bitmarkd
   end
 
   def self.start_time
-    180
+    240
   end
 
   def self.stop_time
