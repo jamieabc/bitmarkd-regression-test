@@ -87,15 +87,16 @@ class Bitmarkd
   end
 
   def wait_status(exp_mode)
-    raise "#{name} stopped" if stopped?
     slept_time = 0
     sleep_int = self.class.sleep_interval
     resp = nil
 
     # for bitmarkd1 and bitmarkd2, it's the starting process, no need to wait it
-    return if [1, 2].include?(bm_num)
+    return true if [1, 2].include?(bm_num)
 
     while slept_time < self.class.start_time
+      return false if stopped?
+
       sleep sleep_int
       slept_time += sleep_int
       resp = status
@@ -110,20 +111,25 @@ class Bitmarkd
       raise "#{name} waits #{slept_time} seconds, " \
             "mode #{mode} differs from expected #{exp_mode}"
     end
+    true
   end
 
   def start
     puts "starting #{name}..."
-    puts "#{name} is already started..." unless stopped?
+    cmd = "#{enter_dir_cmd}; nohup #{start_cmd} &"
+    retry_cnt = 3
 
-    if stopped?
-      bg_start_cmd = "nohup #{start_cmd} &"
-      cmd = "#{enter_dir_cmd}; #{bg_start_cmd}"
+    while retry_cnt >= 0
+      if stopped?
+        `#{cmd}`
+      end
 
-      `#{cmd}`
+      result = wait_status("normal")
+      return if result == true
+      retry_cnt -= 1
+      sleep self.class.sleep_interval
     end
-
-    wait_status("normal")
+    raise "#{name} cannot start..." if stopped?
   end
 
   def double_quote_str(str)
@@ -256,7 +262,7 @@ class Bitmarkd
         break if resp_status.casecmp?(exp_status) || tx_limit_exceed
       end
 
-      sleep Bitmarkd.sleep_interval
+      sleep self.class.sleep_interval
     end
     finish = Time.now
     if tx_limit_exceed
@@ -269,7 +275,7 @@ class Bitmarkd
   end
 
   def tx_limit_exceed?(iteration)
-    iteration * Bitmarkd.sleep_interval >= Bitmarkd.tx_limit_time
+    iteration * self.class.sleep_interval >= self.class.tx_limit_time
   end
 
   def provenance_owner(idx:)
