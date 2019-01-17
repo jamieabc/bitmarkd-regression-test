@@ -6,7 +6,7 @@
 class BTC
   attr_reader :addr
 
-  def initialize(addr)
+  def initialize(addr = "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd")
     @@conf = "bitcoin.conf"
     @@cmd = "bitcoin-cli -conf=#{@@conf}"
     @addr = addr
