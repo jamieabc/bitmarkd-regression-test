@@ -181,7 +181,7 @@ class Bitmarkd
   end
 
   def block_height
-    status["blocks"]
+    status["blocks"].to_i
   end
 
   def change_data_to_backup
