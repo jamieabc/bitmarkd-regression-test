@@ -1,7 +1,5 @@
 Given(/^some bitmarkds already working normally$/) do
-  @bm3.start
-  @bm4.start
-  @bm5.start
+  Bitmarkd.start_all(@bm3, @bm4, @bm5)
 end
 
 Given(/^clean start one bitmarkd$/) do
@@ -36,14 +34,13 @@ end
 Given(/^other bitmarkd connects to specific bitmarkd and works in normal mode$/) do
   # although bitmarkd3 is not stopped, re-connected bitmarkd 1 and 2 might cause
   # it into resynchronise mode
-  [@bm1, @bm2, @bm3, @bm4].each do |bm|
-    bm.start
-  end
+  Bitmarkd.start_all(@bm1, @bm2, @bm3, @bm4)
 end
 
 Given(/^other bitmarkd with same chain data as specific bitmarkd$/) do
   same = @bm4.same_blockchain?(@bm3)
   @bm3.start
+  sleep Bitmarkd.sleep_interval
   @bm4.start
   expect(same).to be_truthy
 end
@@ -67,7 +64,5 @@ Then(/^specific bitmarkd with same data as others$/) do
 end
 
 After("@sync_last_scenario") do
-  @bm3.start
-  @bm4.start
-  @bm5.start
+  Bitmarkd.start_all(@bm3, @bm4, @bm5)
 end

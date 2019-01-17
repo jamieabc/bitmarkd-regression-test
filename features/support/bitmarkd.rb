@@ -311,4 +311,11 @@ class Bitmarkd
   def self.genesis_blk
     1
   end
+
+  def self.start_all(*bms)
+    bms.each do |bm|
+      bm.start
+      sleep self.sleep_interval
+    end
+  end
 end
