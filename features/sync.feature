@@ -8,12 +8,12 @@ Feature: Sync data from network
 
   Scenario: New started bitmarkd sync data form network
     Given clean start one bitmarkd
-    When newly started bitmarkd works in "normal" mode
+    When newly started bitmarkd works in normal mode
     Then newly started bitmarkd should have same data as others
 
   Scenario: Longer chain dominates network
     Given specific bitmarkd has longer chain than rest of others
-    When other bitmarkd connects to specific bitmarkd and works in "normal" mode
+    When other bitmarkd connects to specific bitmarkd and works in normal mode
     Then other bitmarkd with same chain data as specific bitmarkd
 
   @sync_last_scenario

@@ -6,13 +6,12 @@ end
 
 Given(/^clean start one bitmarkd$/) do
   @bm4.stop
-  @bm4.clean_bitmarkd_data
+  @bm4.clear_bitmarkd_data
   @bm4.start
 end
 
-When(/^newly started bitmarkd works in "(.*)" mode$/) do |mode|
+When(/^newly started bitmarkd works in normal mode$/) do
   @bm4.start
-  @bm4.wait_status(mode)
 end
 
 Then(/^newly started bitmarkd should have same data as others$/) do
@@ -34,7 +33,7 @@ Given(/^specific bitmarkd has longer chain than rest of others$/) do
   end
 end
 
-Given(/^other bitmarkd connects to specific bitmarkd and works in "normal" mode$/) do
+Given(/^other bitmarkd connects to specific bitmarkd and works in normal mode$/) do
   # although bitmarkd3 is not stopped, re-connected bitmarkd 1 and 2 might cause
   # it into resynchronise mode
   [@bm1, @bm2, @bm3, @bm4].each do |bm|

@@ -130,11 +130,11 @@ class Bitmarkd
     "\"#{str}\""
   end
 
-  def clean_bitmarkd_data
+  def clear_bitmarkd_data
     puts "clear #{name} data..."
     raise "#{name} not stopped" unless stopped?
-    cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
 
+    cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
     `#{cmd}`
   end
 
