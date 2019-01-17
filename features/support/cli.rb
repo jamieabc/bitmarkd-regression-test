@@ -22,7 +22,8 @@ module Cli
 
     def reset_var_list
       [@response, @issued, @fingerprint, @prev_cmd, @tx_id, @pay_tx_id,
-       @asset_name, @asset_quantity, @asset_meta, @provenance]
+       @asset_name, @asset_quantity, @asset_meta, @provenance, @share_amount,
+       @share_id, @share_info]
     end
 
     def cli
@@ -115,8 +116,35 @@ module Cli
         unratified_tx_args(id: tx_id, receiver: receiver)
       cmd = transfer_cmd(args)
       self.response = JSON.parse(`#{cmd}`)
-      puts "transfer cli result:#{response}"
-      parse_transfer_response(counter_sign)
+      puts "transfer cli result: #{response}"
+      extract_transfer_response(counter_sign)
+    end
+
+    # balance response:
+    # {
+    #   "balances": [
+    #     {
+    #       "shareId": "...",
+    #       "confirmed": 30,
+    #       "spend": 0,
+    #       "available": 30
+    #     }
+    #   ]
+    # }
+    def balance(id = share_id)
+      cmd = balance_cmd(id)
+      resp = JSON.parse(`#{cmd}`)
+      puts "cli balance response: #{resp}"
+      self.share_info = resp["balances"]
+      item = share_info.first
+      [item["shareId"], item["confirmed"]]
+    end
+
+    # balance will return all balances from that point, so limit count to 1
+    def balance_cmd(share_id)
+      cmd = "#{cli_base_cmd} balance -s #{share_id} -c 1"
+      puts "balance command: #{cmd}"
+      cmd
     end
 
     def pay(wallet:, crypto:)
@@ -138,14 +166,17 @@ module Cli
     # two transfer types has different response
     # unratified transfer with bitmarkd ID, payment transaction ID, pay commands
     # counter-sign transfer transfer ID for other ppl to counter-sign
-    def parse_transfer_response(counter_sign)
+    def extract_transfer_response(counter_sign)
       if counter_sign == true
         self.tx_id = response["transfer"]
       else
-        self.tx_id = response["bitmarkId"]
-        self.pay_tx_id = response["transferId"]
-        payments.keys.each { |key| self.payments[key] = response["commands"][key.to_s] }
-        puts "bitmark transfer ID: #{tx_id}, pay transfer ID: #{pay_tx_id}"
+        hsh = {
+          "tx_id=" => "bitmarkId",
+          "pay_tx_id=" => "transferId",
+        }
+        extract_values_from_response(hsh)
+        parse_payments
+        tx_info
       end
     end
 
@@ -154,7 +185,7 @@ module Cli
       puts "counter sign command: #{cmd}"
       self.response = JSON.parse(`#{cmd}`)
       puts "counter sign cli result: #{response}"
-      parse_transfer_response(false)
+      extract_transfer_response(false)
     end
 
     def counter_sign_cmd(receiver)
@@ -177,6 +208,73 @@ module Cli
 
     def unratified_tx_args(**hsh)
       "-u #{counter_sign_tx_args(hsh)}"
+    end
+
+    def share
+      self.response = JSON.parse(`#{share_cmd}`)
+      puts "share cli result: #{response}"
+      extract_share_response
+      tx_info
+    end
+
+    def tx_info
+      str = ""
+      str << "bitmark transfer ID: #{tx_id}, " if tx_id
+      str << "pay transfer ID: #{pay_tx_id}, " if pay_tx_id
+      str << "share ID: #{share_id}, " if share_id
+      puts str
+    end
+
+    # share response:
+    #     {
+    #         "txId" => "",
+    #      "shareId" => "",
+    #        "payId" => "",
+    #     "payments" => {
+    #         "BTC" => [
+    #             [0] {
+    #                 "currency" => "BTC",
+    #                  "address" => "",
+    #                   "amount" => "20000"
+    #             }
+    #         ],
+    #         "LTC" => [
+    #             [0] {
+    #                 "currency" => "LTC",
+    #                  "address" => "",
+    #                   "amount" => "200000"
+    #             }
+    #         ]
+    #     },
+    #     "commands" => {
+    #         "BTC" => "bitmark-wallet --conf ...",
+    #         "LTC" => "bitmark-wallet --conf ..."
+    #     }
+    # }
+    def extract_share_response
+      hsh = {
+        "share_id=" => "shareId",
+        "tx_id=" => "txId",
+        "pay_tx_id=" => "payId",
+      }
+      extract_values_from_response(hsh)
+      parse_payments
+    end
+
+    # provide hash transformation, key is the setter, value is response key
+    def extract_values_from_response(hsh)
+      hsh.each do |key, value|
+        raise "response without key #{value}" unless response.key?(value)
+        self.send(key, response[value]) if response[value]
+      end
+    end
+
+    def parse_payments
+      payments.keys.each { |key| self.payments[key] = response["commands"][key.to_s] }
+    end
+
+    def share_cmd
+      "#{cli_base_cmd} share -t #{tx_id} -q #{share_amount}"
     end
   end
 

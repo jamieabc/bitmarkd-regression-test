@@ -5,12 +5,14 @@ require "rspec"
 require "pry"
 require_relative "cli"
 require_relative "bitcoin"
+require_relative "helper"
 
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
     :data_backup_dir, :home_path, :go_path, :go_bin_path, :name
   attr_accessor :prev_cmd, :asset_name, :asset_quantity, :asset_meta, :response,
-    :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance, :payments
+    :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance, :payments, :share_amount,
+    :share_id, :share_info
 
   include Cli
 
