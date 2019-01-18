@@ -13,7 +13,7 @@ class Wallet
 
   def prepare_tokens(crypto)
     balance = btc_balance
-    crypto.send if balance < min_btc_balance
+    crypto.send_tokens if balance < min_btc_balance
   end
 
   def btc_balance
