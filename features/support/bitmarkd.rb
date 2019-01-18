@@ -102,7 +102,7 @@ class Bitmarkd
       sleep sleep_int
       slept_time += sleep_int
       resp = status
-      continue if resp.empty?
+      next if resp.empty?
       mode = status["mode"]
       break if exp_mode.casecmp?(mode)
     end
