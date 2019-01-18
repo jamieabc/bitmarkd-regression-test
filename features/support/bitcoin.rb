@@ -7,12 +7,11 @@ class BTC
   attr_reader :addr
 
   def initialize(addr = "mnmAxmmcHGK7zUSQRF4LBNBzc1jgB7hWxd")
-    @@conf = "bitcoin.conf"
-    @@cmd = "bitcoin-cli -conf=#{@@conf}"
+    @@cmd = "bitcoin-cli"
     @addr = addr
   end
 
-  def send(custom_addr = addr)
+  def send_tokens(custom_addr = addr)
     `#{@@cmd} sendtoaddress #{custom_addr} 50`
 
     # make sure record is put onto blockchain
