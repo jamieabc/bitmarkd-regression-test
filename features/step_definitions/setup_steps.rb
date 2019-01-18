@@ -12,6 +12,10 @@ Given(/^I have a friend "(.*)" with bitmark account$/) do |friend|
   check_identity(friend)
 end
 
+Given(/^some bitmarkds already working normally$/) do
+  Bitmarkd.start_all(@bm3, @bm4, @bm5)
+end
+
 Given(/^wallet has enough balance to pay$/) do
   raise "Error: wallet config file #{@wallet.file} not exist" unless @wallet.exist?
 
