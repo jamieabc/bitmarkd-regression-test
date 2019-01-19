@@ -152,7 +152,9 @@ module Cli
       raise "#{crypto} not support" if payments.keys.include?(crypto.upcase)
       cmd = pay_cmd(wallet: wallet, crypto: crypto)
       puts "pay command: #{cmd}"
-      resp = JSON.parse(`#{cmd}`)
+      resp = `#{cmd}`
+      puts "pay cli result: #{resp}"
+      resp = JSON.parse(resp)
       crypto_tx_id = resp["txId"]
       puts "#{crypto.upcase} payment transaction ID: #{crypto_tx_id}"
     end

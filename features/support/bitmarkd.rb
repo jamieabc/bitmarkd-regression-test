@@ -105,8 +105,12 @@ class Bitmarkd
     sleep_int = self.class.sleep_interval
     resp = nil
 
-    # for bitmarkd1 and bitmarkd2, it's the starting process, no need to wait it
-    return true if [1, 2].include?(bm_num)
+    # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
+    return if bm_num == 1
+    if bm_num == 2
+      sleep self.class.start_time
+      return
+    end
 
     while slept_time < self.class.start_time
       return false if stopped?
@@ -138,10 +142,8 @@ class Bitmarkd
         `#{cmd}`
       end
 
-      result = wait_status("normal")
-      return if result == true
+      return if wait_status("normal")
       retry_cnt -= 1
-      sleep self.class.sleep_interval
     end
     raise "#{name} cannot start..." if stopped?
   end
@@ -202,7 +204,7 @@ class Bitmarkd
   end
 
   def block_height
-    status["blocks"].to_i
+    status["blocks"]["local"].to_i
   end
 
   def change_data_to_backup
