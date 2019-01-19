@@ -2,7 +2,7 @@ class Wallet
   attr_reader :conf, :password, :ltc_conf, :min_btc_balance
 
   def initialize
-    @conf = "wallet.conf"
+    @conf = "~/.config/wallet/wallet.conf"
     @password = "12345678"
     @min_btc_balance = 1e9      #10 btc
   end
