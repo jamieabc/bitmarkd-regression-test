@@ -49,7 +49,7 @@ Then(/^with name "(.*)", amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |exp_
   got = @bm3.issued["result"]["assets"].first["data"]["metadata"]
   expect(got).to eql(exp_meta_str)
 
-  issued_amount = JSON.parse(@bm3.response)["issueIds"].size if @bm3.response
+  issued_amount = @bm3.response["issueIds"].size if @bm3.response
   target_amount = exp_amount.length.zero? ? 0 : exp_amount.to_i
   expect(issued_amount).to eq(target_amount)
 end
@@ -59,9 +59,8 @@ Then(/^I failed with cli error message "(.*)"$/) do |err_msg|
 end
 
 Then(/^I need to pay for second issue$/) do
-  json = JSON.parse(@bm3.response)
-  expect(json.has_key? "payments").to be_truthy
-  expect(json.has_key? "commands").to be_truthy
+  expect(@bm3.response.has_key?("payments")).to be_truthy
+  expect(@bm3.response.has_key?("commands")).to be_truthy
 end
 
 def do_new_issue
@@ -74,12 +73,11 @@ end
 
 def set_tx_id_from_response
   # raise error is empty or error message
-  if @bm3.response.empty? || @bm3.response.include?("error")
-    raise "Issue failed with message #{@bm3.response}"
+  if @bm3.response.empty?
+    raise "Issue failed without response"
   end
 
-  json = JSON.parse(@bm3.response)
-  @bm3.tx_id = json["issueIds"].first
+  @bm3.tx_id = @bm3.response["issueIds"].first
 end
 
 def returned_meta_str(key, value)

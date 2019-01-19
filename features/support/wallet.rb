@@ -18,6 +18,7 @@ class Wallet
 
   def btc_balance
     resp = sync_btc_balance
+    puts "wallet response: #{resp}"
     parse_btc_balance(resp)
   end
 

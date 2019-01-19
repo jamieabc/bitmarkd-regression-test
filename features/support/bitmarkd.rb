@@ -3,13 +3,15 @@ require "openssl"
 require "socket"
 require "rspec"
 require "pry"
+require "net/http"
 require_relative "cli"
 require_relative "bitcoin"
 require_relative "helper"
 
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
-    :data_backup_dir, :home_path, :go_path, :go_bin_path, :name
+    :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :rpc_port, :status_uri,
+    :rpc_uri
   attr_accessor :prev_cmd, :asset_name, :asset_quantity, :asset_meta, :response,
     :issued, :tx_id, :pay_tx_id, :fingerprint, :provenance, :payments, :share_amount,
     :share_id, :share_info
@@ -20,7 +22,10 @@ class Bitmarkd
     @bm_num = bm_num
     @name = "bitmarkd#{@bm_num}"
     @port = port
+    @rpc_port = "2#{bm_num}31"
     @ip = is_os_freebsd ? "172.16.23.113" : "127.0.0.1"
+    @status_uri = "/bitmarkd/details"
+    @rpc_uri = "/bitmarkd/rpc"
     @data_dir = "data"
     @data_backup_dir = "data-backup"
     @home_path = ENV["HOME"]
@@ -29,18 +34,25 @@ class Bitmarkd
     init_cli
   end
 
-  def status(hsh = {})
-    raise "#{name} stopped" if stopped?
-    identity = hsh.key?(:identity) ? hsh[:identity] : default_identity
-    cmd = bm_status_cmd(identity)
+  def create_http
+    http = Net::HTTP.new(ip, rpc_port)
+    http.use_ssl = true
+    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
+    http
+  end
 
-    resp = `#{cmd}`
-    if resp.empty? || resp.include?("error")
-      puts "status error response: #{resp}"
+  def status
+    raise "#{name} stopped" if stopped?
+    http = create_http
+    resp = http.get(status_uri)
+
+    unless resp.kind_of?(Net::HTTPSuccess)
+      puts "status error response: #{resp.body}"
       return ""
     end
 
-    JSON.parse(resp)
+    self.response = JSON.parse(resp.body)
+    response
   end
 
   def normal?
@@ -216,10 +228,29 @@ class Bitmarkd
     ssl
   end
 
+  # def issued_data
+  #   ssl = open_ssl_socket
+  #   ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{fingerprint}\"]}]}"
+  #   binding.pry
+  #   self.issued = JSON.parse(ssl.gets)
+  # end
+
   def issued_data
-    ssl = open_ssl_socket
-    ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{fingerprint}\"]}]}"
-    self.issued = JSON.parse(ssl.gets)
+    http = create_http
+    body = {
+      "id" => 1,
+      "method" => "Assets.Get",
+      "params" => [
+        {
+          "fingerprints" => [
+            "#{fingerprint}",
+          ],
+        },
+      ],
+    }.to_json
+    resp = http.post(rpc_uri, body, "Content-Type" => "application/json")
+    raise "RCP asset get response error: #{resp.body}" unless resp.kind_of?(Net::HTTPSuccess)
+    self.issued = JSON.parse(resp.body)
   end
 
   def same_blockchain?(benchmark)

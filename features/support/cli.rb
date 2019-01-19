@@ -34,10 +34,6 @@ module Cli
       "#{cli} -c #{cli_conf} -i '#{identity}' -p #{password}"
     end
 
-    def bm_status_cmd(identity)
-      "#{cli_base_cmd(identity)} bitmarkInfo 2>&1"
-    end
-
     def identities
       resp = JSON.parse(`#{cli_base_cmd} info`)
       resp["identities"].map { |i| i["name"] }
@@ -56,9 +52,14 @@ module Cli
       end
 
       puts "issue command: #{cmd}"
-      self.response = `#{cmd}`
-      puts "cli issue with response: #{response}"
-      raise "Issue failed with message #{response}" unless response
+      resp = `#{cmd}`
+      if resp.downcase.include?("error")
+        puts "Issue failed with message #{resp}"
+        self.response = resp
+      else
+        self.response = JSON.parse(resp)
+        puts "cli issue with response: #{response}"
+      end
     end
 
     def issue_cmd
