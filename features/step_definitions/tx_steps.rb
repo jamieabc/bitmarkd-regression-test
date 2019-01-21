@@ -1,4 +1,4 @@
-Given(/^I have asset name "(.*)" on blockchain$/) do |name|
+Given(/^I have asset "(.*)" on blockchain$/) do |name|
   @bm3.asset_name = name
   @bm3.asset_quantity = 1
   @bm3.asset_meta = {}

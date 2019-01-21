@@ -19,10 +19,11 @@ end
 Given(/^wallet has enough balance to pay$/) do
   raise "Error: wallet config file #{@wallet.file} not exist" unless @wallet.exist?
 
-  @wallet.prepare_tokens(@btc)
-  btc_balance = @wallet.btc_balance
+  unless @wallet.btc_enough?
+    BTC.send_tokens
+  end
 
-  expect(btc_balance).to be >= @wallet.min_btc_balance
+  expect(@wallet.btc_balance).to be >= @wallet.min_btc_balance
 end
 
 def check_identity(id)
