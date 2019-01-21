@@ -9,7 +9,7 @@ class Wallet
   end
 
   def exist?
-    File.exist? conf
+    File.exist?(conf)
   end
 
   def prepare_tokens(crypto)
@@ -38,7 +38,7 @@ class Wallet
 
   def parse_btc_balance(resp)
     resp.split("\n")
-      .select { |str| str.include? "Balance:" }.first
+      .select { |str| str.include?("Balance:") }.first
       .split(" ")[1].to_i
   end
 
