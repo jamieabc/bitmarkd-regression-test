@@ -155,7 +155,7 @@ module Cli
       resp = wallet.pay(
         crypto,
         response["payId"],
-        pay_info[c].first["address"],
+        pay_info["address"],
         pay_info["amount"]
       )
       json = JSON.parse(resp)
