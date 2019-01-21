@@ -17,7 +17,7 @@ Given(/^some bitmarkds already working normally$/) do
 end
 
 Given(/^wallet has enough balance to pay$/) do
-  raise "Error: wallet config file #{@wallet.file} not exist" unless @wallet.exist?
+  raise "Error: wallet config file #{@wallet.conf} not exist" unless @wallet.exist?
 
   unless @wallet.btc_enough?
     BTC.send_tokens
