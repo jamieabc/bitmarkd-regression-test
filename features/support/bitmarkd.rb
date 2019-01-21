@@ -233,7 +233,6 @@ class Bitmarkd
   # def issued_data
   #   ssl = open_ssl_socket
   #   ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{fingerprint}\"]}]}"
-  #   binding.pry
   #   self.issued = JSON.parse(ssl.gets)
   # end
 
