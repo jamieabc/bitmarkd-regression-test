@@ -5,6 +5,7 @@ class Wallet
     @conf = "~/.config/wallet/wallet.conf"
     @password = "12345678"
     @min_btc_balance = 1e9      #10 btc
+    btc_balance
   end
 
   def exist?
@@ -12,8 +13,15 @@ class Wallet
   end
 
   def prepare_tokens(crypto)
-    balance = btc_balance
-    crypto.send_tokens if balance < min_btc_balance
+    crypto.send_tokens if btc_balance < min_btc_balance
+  end
+
+  def pay(crypto, pay_id, pay_addr, amount)
+    raise "invalid payments #{crypto}" unless supported.include?(crypto.upcase)
+    cmd = "#{base_cmd} #{crypto.downcase} --testnet sendmany --hex-data " \
+    "'#{pay_id}' '#{pay_addr},#{amount}'"
+    puts "pay command: #{cmd}"
+    `#{cmd}`
   end
 
   def btc_balance
@@ -21,6 +29,12 @@ class Wallet
     puts "wallet response: #{resp}"
     parse_btc_balance(resp)
   end
+
+  def btc_enough?
+    btc_balance >= min_btc_balance
+  end
+
+  private
 
   def parse_btc_balance(resp)
     resp.split("\n")
@@ -38,6 +52,10 @@ class Wallet
 
   def base_cmd
     "#{cmd_prefix} bitmark-wallet -C #{conf}"
+  end
+
+  def supported
+    %w(BTC LTC)
   end
 
   def self.btc_addr

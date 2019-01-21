@@ -149,21 +149,19 @@ module Cli
     end
 
     def pay(wallet:, crypto:)
-      raise "#{crypto} not support" if payments.keys.include?(crypto.upcase)
-      cmd = pay_cmd(wallet: wallet, crypto: crypto)
-      puts "pay command: #{cmd}"
-      resp = `#{cmd}`
-      puts "pay cli result: #{resp}"
-      resp = JSON.parse(resp)
-      crypto_tx_id = resp["txId"]
+      c = crypto.upcase
+      raise "#{crypto} not support" if payments.keys.include?(c)
+      pay_info = response["payments"][c].first
+      resp = wallet.pay(
+        crypto,
+        response["payId"],
+        pay_info[c].first["address"],
+        pay_info["amount"]
+      )
+      json = JSON.parse(resp)
+      puts "pay result: #{json}"
+      crypto_tx_id = json["txId"]
       puts "#{crypto.upcase} payment transaction ID: #{crypto_tx_id}"
-    end
-
-    def pay_cmd(wallet:, crypto:)
-      default_wallet_conf = "${XDG_CONFIG_HOME}/bitmark-wallet/bitmark-wallet.conf"
-      sym = crypto.upcase.to_sym
-      wallet_cmd = payments[sym].gsub!(default_wallet_conf, wallet.conf)
-      "#{wallet.cmd_prefix} #{wallet_cmd} 2>&1"
     end
 
     # two transfer types has different response
