@@ -2,7 +2,7 @@ class Wallet
   attr_reader :conf, :password, :ltc_conf, :min_btc_balance
 
   def initialize
-    @conf = "~/.config/wallet/wallet.conf"
+    @conf = "#{ENV["HOME"]}/.config/wallet/wallet.conf"
     @password = "12345678"
     @min_btc_balance = 1e9      #10 btc
     btc_balance
@@ -26,7 +26,6 @@ class Wallet
 
   def btc_balance
     resp = sync_btc_balance
-    puts "wallet response: #{resp}"
     parse_btc_balance(resp)
   end
 
