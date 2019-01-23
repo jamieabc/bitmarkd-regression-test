@@ -27,14 +27,14 @@ Feature: Create issue by bitmark-cli
 
     Examples: Missing necessary parameters
       asset name and metadata are both required.
-    
+
       | asset name | asset amount | meta key | meta value | error message            |
       | ""         | "1"          | "owner"  | "James"    | "asset name is required" |
       | "Failed 1" | "1"          | ""       | ""         | "metadata is not map"    |
       | "Failed 2" | "1"          | "owner"  | ""         | "metadata is not map"    |
       | "Failed 3" | "1"          | ""       | "Sam"      | "metadata is not map"    |
-      
-  Scenario: Issue same asset twice provides payment info
+
+  Scenario: Issue same asset twice should pay
     Given I have digital asset name "The Mona Lisa"
     And amount "1", metadata "owner" to be "Hank"
     When I issue first time and wait for it become valid
