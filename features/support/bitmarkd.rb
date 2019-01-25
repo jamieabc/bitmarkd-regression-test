@@ -43,6 +43,7 @@ class Bitmarkd
 
   def status
     raise "#{name} stopped" if stopped?
+
     http = create_http
     resp = http.get(status_uri)
 
@@ -101,6 +102,10 @@ class Bitmarkd
     "#{bm_base_cmd} start >/dev/null 2>&1"
   end
 
+  def start_bg_cmd
+    "nohup #{start_cmd} &"
+  end
+
   def wait_status(exp_mode)
     slept_time = 0
     sleep_int = self.class.sleep_interval
@@ -108,6 +113,7 @@ class Bitmarkd
 
     # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
     return if bm_num == 1
+
     if bm_num == 2
       sleep self.class.start_interval
       return
@@ -123,9 +129,7 @@ class Bitmarkd
       mode = status["mode"]
       break if exp_mode.casecmp?(mode)
     end
-
     puts "#{name} cli result: #{resp}"
-
     unless exp_mode.casecmp?(mode)
       raise "#{name} waits #{slept_time} seconds, " \
             "mode #{mode} differs from expected #{exp_mode}"
@@ -135,7 +139,7 @@ class Bitmarkd
 
   def start
     puts "starting #{name}..."
-    cmd = "#{enter_dir_cmd}; nohup #{start_cmd} &"
+    cmd = "#{enter_dir_cmd}; #{start_bg_cmd}"
     retry_cnt = 3
 
     while retry_cnt >= 0
@@ -202,12 +206,11 @@ class Bitmarkd
     str[truncate_length..(-1 * truncate_length - 1)]
   end
 
-  def check_backup_data_exist?
-    cmd = "ls #{path}/#{data_backup_dir}"
+  def backup_exist?
+    result = `ls #{path}/#{data_backup_dir}`
+    return false if result.include?("No such file or directory")
 
-    result = `#{cmd}`
-
-    raise "#{backup_dir} not exist" if result.include?("No such file or directory")
+    true
   end
 
   def block_height
@@ -215,7 +218,7 @@ class Bitmarkd
   end
 
   def restore_backup
-    check_backup_data_exist?
+    return unless backup_exist?
 
     cd_cmd = enter_dir_cmd
     rm_cmd = "rm -r #{data_dir}"
@@ -334,7 +337,7 @@ class Bitmarkd
   end
 
   def self.start_interval
-    240
+    180
   end
 
   def self.stop_interval
