@@ -79,7 +79,7 @@ class Bitmarkd
     return if stopped?
     terminate(false)
     return if stopped?
-    sleep self.class.stop_time
+    sleep self.class.stop_interval
     terminate(true)
   end
 
@@ -109,11 +109,11 @@ class Bitmarkd
     # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
     return if bm_num == 1
     if bm_num == 2
-      sleep self.class.start_time
+      sleep self.class.start_interval
       return
     end
 
-    while slept_time < self.class.start_time
+    while slept_time < self.class.start_interval
       return false if stopped?
 
       sleep sleep_int
@@ -188,7 +188,7 @@ class Bitmarkd
     stop
 
     # wait 5 seconds for bitmarkd to stop
-    sleep self.class.stop_time
+    sleep self.class.stop_interval
 
     cmd = double_quote_str("#{dump_db_cmd} T")
 
@@ -236,12 +236,6 @@ class Bitmarkd
     ssl.connect
     ssl
   end
-
-  # def issued_data
-  #   ssl = open_ssl_socket
-  #   ssl.puts "{\"id\":\"1\",\"method\":\"Assets.Get\",\"params\":[{\"fingerprints\": [\"#{fingerprint}\"]}]}"
-  #   self.issued = JSON.parse(ssl.gets)
-  # end
 
   def issued_data
     http = create_http
@@ -339,11 +333,11 @@ class Bitmarkd
     10
   end
 
-  def self.start_time
+  def self.start_interval
     240
   end
 
-  def self.stop_time
+  def self.stop_interval
     5
   end
 

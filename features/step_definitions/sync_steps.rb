@@ -46,7 +46,7 @@ end
 
 When(/^specific bitmarkd works in "normal" mode$/) do
   # bitmarkd takes some time to start
-  puts "wait at most #{Bitmarkd.start_time} seconds for #{@bm4.name} to start"
+  puts "wait at most #{Bitmarkd.start_interval} seconds for #{@bm4.name} to start"
   @bm4.start
   expect(@bm4.normal?).to be_truthy
 end
