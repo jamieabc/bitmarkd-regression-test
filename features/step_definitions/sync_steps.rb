@@ -1,6 +1,7 @@
 Given(/^clean start one bitmarkd$/) do
   @bm4.stop
-  @bm4.clear_bitmarkd_data
+  @bm4.clear_data
+  @bm4.clear_cache
   @bm4.start
 end
 
@@ -20,10 +21,9 @@ Given(/^specific bitmarkd has longer chain than rest of others$/) do
        ", truncate others to #{truncate_to_blk}"
 
   [@bm1, @bm2, @bm4].each do |bm|
-    puts "stopping #{bm.name}..."
     bm.stop
-    puts "truncate #{bm.name} block number to #{truncate_to_blk}"
-    bm.truncate_chain_to_block(truncate_to_blk)
+    bm.truncate_to_block(truncate_to_blk)
+    bm.clear_cache
   end
 end
 
@@ -40,8 +40,8 @@ end
 
 Given(/^specific bitmarkd with same chain length but different data than others$/) do
   @bm4.stop
-  @bm4.change_data_to_backup
-  @bm4.truncate_chain_to_block(@bm3.block_height)
+  @bm4.restore_backup
+  @bm4.truncate_to_block(@bm3.block_height)
 end
 
 When(/^specific bitmarkd works in "normal" mode$/) do

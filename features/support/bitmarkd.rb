@@ -63,10 +63,11 @@ class Bitmarkd
     "#{bm_exec} --config-file='#{name}.conf'"
   end
 
-  def truncate_chain_to_block(blk_num)
-    cd_cmd = enter_dir_cmd
-    del_cmd = "#{bm_base_cmd} delete-down #{blk_num}"
+  def truncate_to_block(blk_num)
+    puts "truncate #{name} block number to #{blk_num}"
 
+    cd_cmd = enter_dir_cmd
+    del_cmd = "#{bm_base_cmd} delete-down #{blk_num + 1}"
     `#{cd_cmd}; #{del_cmd}`
   end
 
@@ -152,12 +153,18 @@ class Bitmarkd
     "\"#{str}\""
   end
 
-  def clear_bitmarkd_data
-    puts "clear #{name} data..."
+  def clear_data
     raise "#{name} not stopped" unless stopped?
 
-    cmd = "[ -d #{path}/data ] && rm -r #{path}/data"
-    `#{cmd}`
+    puts "delete #{name} data directory..."
+    `[ -d #{path}/data ] && rm -r #{path}/data`
+  end
+
+  def clear_cache
+    raise "#{name} not stopped" unless stopped?
+
+    puts "delete #{name} cache file..."
+    `[ -f #{path}/reservoir-local.cache ] && rm #{path}/reservoir-local.cache`
   end
 
   def path
@@ -207,7 +214,7 @@ class Bitmarkd
     status["blocks"]["local"].to_i
   end
 
-  def change_data_to_backup
+  def restore_backup
     check_backup_data_exist?
 
     cd_cmd = enter_dir_cmd
