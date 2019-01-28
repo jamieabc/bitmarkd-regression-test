@@ -78,8 +78,10 @@ class Bitmarkd
   def stop
     puts "stopping #{name}..."
     return if stopped?
+
     terminate(false)
     return if stopped?
+
     sleep self.class.stop_interval
     terminate(true)
   end
@@ -91,7 +93,10 @@ class Bitmarkd
   end
 
   def stopped?
-    `pgrep -f #{name}`.empty?
+    # use "bitmarkd3.conf" as format because I could show log at the same time.
+    # it would be safer to test for bitmarkd3.conf file rather than bitmarkd3
+    # which might count in tail command: tail -f .../bitmarkd3/log/...
+    `pgrep -f #{name}.conf`.empty?
   end
 
   def enter_dir_cmd
@@ -109,17 +114,18 @@ class Bitmarkd
   def wait_status(exp_mode)
     slept_time = 0
     sleep_int = self.class.sleep_interval
+    sleep_limit = self.class.start_interval
     resp = nil
 
     # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
     return if bm_num == 1
 
     if bm_num == 2
-      sleep self.class.start_interval
+      sleep sleep_imit
       return
     end
 
-    while slept_time < self.class.start_interval
+    while slept_time < sleep_limit
       return false if stopped?
 
       sleep sleep_int
@@ -142,7 +148,7 @@ class Bitmarkd
     cmd = "#{enter_dir_cmd}; #{start_bg_cmd}"
     retry_cnt = 3
 
-    while retry_cnt >= 0
+    while retry_cnt > 0
       if stopped?
         `#{cmd}`
       end
@@ -274,6 +280,9 @@ class Bitmarkd
     db1 == db2
   end
 
+  # todo: consider change this method into wait_tx_confirmed, cause currently no other
+  # satatus will be waited. In this way, exp_status can be removed, and id can be made
+  # default to instance method "id"
   def wait_tx_status(id:, exp_status:)
     # mine some blocks, make sure transfer is confirmed
     BTC.mine
