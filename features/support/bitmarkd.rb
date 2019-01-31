@@ -41,6 +41,10 @@ class Bitmarkd
     http
   end
 
+  def empty_record?
+    status["blocks"]["local"] == 1 && status["blocks"]["remote"] == 1
+  end
+
   def status
     raise "#{name} stopped" if stopped?
 
@@ -342,7 +346,7 @@ class Bitmarkd
   # below are class methods
 
   def self.sleep_interval
-    10
+    5
   end
 
   def self.start_interval
