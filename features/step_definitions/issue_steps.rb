@@ -1,14 +1,10 @@
-Given(/^I have digital asset name "(.*)"$/) do |name|
-  @bm3.asset_name = name
-end
-
-Given(/^amount "(.*)", metadata "(.*)" to be "(.*)"$/) do |amount, key, value|
-  @bm3.asset_quantity = amount.length.zero? ? 0 : amount.to_i
-
+Given(/^I have asset "(.*)", amount "(.*), metadata "(.*)" to be "(.*)"$/) do |name, amount, key, value|
+  quantity = amount.length.zero? ? 0 : amount.to_i
   # initialized metadata hash
-  @bm3.asset_meta = {} if @bm3.asset_meta.nil?
+  meta = @bm3.asset_meta.nil? ? {} : @bm3.asset_meta
 
-  @bm3.asset_meta[key] = value
+  meta[key] = value
+  @bm3.setup_issue_args(name: name, meta: meta, quantity: quantity)
 end
 
 When(/^I issue$/) do

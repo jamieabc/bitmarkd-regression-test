@@ -1,8 +1,8 @@
 Given(/^I have asset "(.*)" on blockchain$/) do |name|
-  @bm3.asset_name = name
-  @bm3.asset_quantity = 1
-  @bm3.asset_meta = {}
-  @bm3.asset_meta["owner"] = @bm3.default_identity
+  meta = {
+    "owner" => @bm3.default_identity,
+  }
+  @bm3.setup_issue_args(name: name, meta: meta, quantity: 1)
 
   step "I issue first time and wait for it become valid"
 end
