@@ -155,8 +155,8 @@ module Cli
     #     }
     #   ]
     # }
-    def balance(id = share_id)
-      cmd = balance_cmd(id)
+    def balance(share = share_id, identity = default_identity)
+      cmd = balance_cmd(share, identity)
       resp = JSON.parse(`#{cmd}`)
       puts "cli balance response: #{resp}"
       self.share_info = resp["balances"]
@@ -165,8 +165,8 @@ module Cli
     end
 
     # balance will return all balances from that point, so limit count to 1
-    def balance_cmd(share_id)
-      cmd = "#{cli_base_cmd} balance -s #{share_id} -c 1"
+    def balance_cmd(share, identity)
+      cmd = "#{cli_base_cmd(identity)} balance -s #{share} -c 1"
       puts "balance command: #{cmd}"
       cmd
     end
@@ -204,12 +204,35 @@ module Cli
       end
     end
 
+    def extract_counter_sign_grant_response
+      hsh = {
+        "tx_id=" => "grantId",
+        "pay_tx_id=" => "payId",
+      }
+      extract_values_from_response(hsh)
+      parse_payments
+      tx_info
+    end
+
+    # counter_sign and counter_sign_grant has much similar behavior, should
+    # refactor it
     def counter_sign(receiver)
       cmd = counter_sign_cmd(receiver)
       puts "counter sign command: #{cmd}"
       self.response = JSON.parse(`#{cmd}`)
       puts "counter sign cli result: #{response}"
       extract_transfer_response(false)
+    end
+
+    def counter_sign_grant(receiver)
+      cmd = counter_sign_cmd(receiver)
+      puts "counter sign grant command: #{cmd}"
+      resp = `#{cmd}`
+      return resp if resp.include?("error")
+
+      self.response = JSON.parse(resp)
+      puts "counter sign grant cli result: #{response}"
+      extract_counter_sign_grant_response
     end
 
     def counter_sign_cmd(receiver)
@@ -241,6 +264,14 @@ module Cli
       tx_info
     end
 
+    def grant(receiver:, quantity:)
+      cmd = grant_cmd(receiver: receiver, quantity: quantity)
+      @response = JSON.parse(`#{cmd}`)
+      puts "grant cli result:#{response}"
+      extract_grant_response
+      tx_info
+    end
+
     def tx_info
       str = ""
       str << "bitmark transfer ID: #{tx_id}, " if tx_id
@@ -250,7 +281,7 @@ module Cli
     end
 
     # share response:
-    #     {
+    # {
     #         "txId" => "",
     #      "shareId" => "",
     #        "payId" => "",
@@ -276,6 +307,7 @@ module Cli
     #     }
     # }
     def extract_share_response
+      # key denotes for instance method used, value denotes for key from cli response
       hsh = {
         "share_id=" => "shareId",
         "tx_id=" => "txId",
@@ -283,6 +315,20 @@ module Cli
       }
       extract_values_from_response(hsh)
       parse_payments
+    end
+
+    # grant response:
+    # {
+    #   "identity" => "eZW5AbiXJTKLna39vw5CAKDjwTxZsD8XozfLG754hRQDujz5HD",
+    #   "grant" => "0920709725..."
+    # }
+    def extract_grant_response
+      # key denotes for instance method used, value denotes for key from cli response
+      # in other words, cli response result of "grant" will be saved into "tx_id"
+      hsh = {
+        "tx_id=" => "grant",
+      }
+      extract_values_from_response(hsh)
     end
 
     # provide hash transformation, key is the setter, value is response key
@@ -299,6 +345,10 @@ module Cli
 
     def share_cmd
       "#{cli_base_cmd} share -t #{tx_id} -q #{share_amount}"
+    end
+
+    def grant_cmd(id = share_id, before_blk = 0, receiver:, quantity:)
+      "#{cli_base_cmd} grant -r '#{receiver}' -s #{id} -q #{quantity} -b #{before_blk}"
     end
   end
 

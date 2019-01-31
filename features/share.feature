@@ -12,12 +12,12 @@ Feature: Create share by bitmark-client
     When I split asset ownership into "50" shares
     Then asset become "50" shares
 
-  # Scenario: Grant shares
-  #   Given I have "200" shares of asset "The Blind Girl"
-  #   When I grant "Foo" with "30" shares
-  #   Then "Foo" has "30" shares of asset
-  #   And I have "70" shares of asset
-  #   And I am not allowed to grant "100" shares of asset to "Foo"
+  Scenario: Grant shares
+    Given I have "200" shares of asset "The Blind Girl"
+    When I grant "Foo" with "30" shares
+    Then "Foo" has "30" shares of asset
+    And I have "170" shares of asset
+    And I am not allowed to grant "200" shares of asset to "Foo"
 
   # Scenario: Swap shares
   #   Given I have "100" shares of asset A - "The School of Athens"
