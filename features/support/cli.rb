@@ -39,7 +39,28 @@ module Cli
       resp["identities"].map { |i| i["name"] }
     end
 
-    def issue(again: false)
+    def setup_issue_args(name:, meta:, quantity:)
+      @asset_name = name
+      @asset_quantity = quantity
+      @asset_meta = meta
+    end
+
+    # genesis block record is currently not on chain, so when test sync between different
+    # chains, program hangs because it cannot not distinguish if two chains differ from
+    # the beginning are same or not.
+    # In order to test sync features, I manually setup an issue record that is same
+    # for all tests, think it as a virtual genesis block record.
+    def issue_first_record
+      meta = {
+        "owner" => "me",
+      }
+      setup_issue_args(name: "first asset", meta: meta, quantity: 1)
+      @fingerprint = "first issue record"
+
+      issue(again: false, first_record: true)
+    end
+
+    def issue(again: false, first_record: false)
       self.response = nil
 
       # generate new issue or use previous one
@@ -47,12 +68,13 @@ module Cli
         # clear previous existing result
         cmd = prev_cmd
       else
-        cmd = issue_cmd
+        cmd = issue_cmd(first_record)
         self.prev_cmd = cmd
       end
 
       puts "issue command: #{cmd}"
       resp = `#{cmd}`
+      # extract a method to parse response
       if resp.downcase.include?("error")
         puts "Issue failed with message #{resp}"
         self.response = resp
@@ -62,12 +84,13 @@ module Cli
       end
     end
 
-    def issue_cmd
-      "#{cli_base_cmd} create #{issue_args} 2>&1"
+    def issue_cmd(first_record = false)
+      "#{cli_base_cmd} create #{issue_args(first_record)} 2>&1"
     end
 
-    def issue_args
-      "#{asset_args} #{meta_args} -f \"#{gen_fingerprint}\""
+    def issue_args(first_record)
+      gen_fingerprint if first_record == false
+      "#{asset_args} #{meta_args} -f \"#{fingerprint}\""
     end
 
     def asset_args

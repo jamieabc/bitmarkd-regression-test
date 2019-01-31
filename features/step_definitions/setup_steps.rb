@@ -14,6 +14,7 @@ end
 
 Given(/^some bitmarkds already working normally$/) do
   Bitmarkd.start_all(@bm3, @bm4, @bm5)
+  @bm3.issue_first_record if @bm3.empty_record?
 end
 
 Given(/^wallet has enough balance to pay$/) do
