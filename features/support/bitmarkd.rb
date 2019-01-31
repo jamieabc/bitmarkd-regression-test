@@ -121,7 +121,7 @@ class Bitmarkd
     return if bm_num == 1
 
     if bm_num == 2
-      sleep sleep_imit
+      sleep sleep_limit
       return
     end
 
