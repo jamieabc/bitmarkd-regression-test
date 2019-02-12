@@ -33,7 +33,7 @@ git clone "${repo}"
 # run test cases
 cd ~/${regression_dir}
 echo running cucumber...
-cucumber --fail-fast --format json_pretty -o ~/${result_file}
+cucumber --fail-fast -g --format json_pretty -o ~/${result_file}
 
 # check cucumber status
 if [ $? -ne 0 ]; then
