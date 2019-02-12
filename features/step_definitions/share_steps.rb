@@ -18,8 +18,9 @@ Given(/^I have "(\d+)" shares of asset "(.*)"$/) do |amount, asset|
   # refactor later, use method to setup asset info instead of accessing
   # instance variable. Also, maybe it's necessary to provide a method to auto-gen
   # asset related data
-  meta = {}
-  meta["owner"] = @bm3.default_identity
+  meta = {
+    "owner" => @bm3.default_identity,
+  }
   @bm3.setup_issue_args(name: asset, meta: meta, quantity: amount)
 
   step "I issue first time and wait for it become valid"
@@ -34,7 +35,7 @@ When(/^I grant "(.*)" with "(\d+)" shares$/) do |friend, amount|
   @bm3.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
 end
 
-Then(/^"(.*)" has "(\d+)" shares of asset/) do |friend, amount|
+Then(/^"(.*)" has "(\d+)" shares of asset$/) do |friend, amount|
   id, balance = @bm3.balance(@bm3.share_id, friend)
   expect(balance).to eq(amount)
 end
@@ -51,8 +52,70 @@ Then(/^I am not allowed to grant "(\d+)" shares of asset to "(.*)"$/) do |amount
 end
 
 # Swap shares
+Given(/^I have "(\d+)" shares of asset "(.*)" - (.*)$/) do |amount, name, asset_alias|
+  meta = {
+    "owner" => @bm3.default_identity,
+  }
+  @bm3.setup_issue_args(name: name, meta: meta, quantity: amount)
+  instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, @bm3.default_identity)
 
-# Given"Foo" has "200" shares of asset "Girl with a Pearl Earring"
-# When I exchange "60" shares of mine for "30" shares of "Foo"
-# Then I have "40" shares of "The school of Athens" and "30" shares of "Girl tiwh a pearl Earring"
-# Then "Foo" has "60" shares of "The school Athens" and "170" shares of "Girl with a Pearl Earring"
+  @bm3.issue(again: false)
+  @bm3.tx_id = @bm3.response["issueIds"].first
+  BTC.mine
+  @bm3.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
+
+  @bm3.share_amount = amount
+  @bm3.share
+  @bm3.pay(wallet: @wallet, crypto: "BTC")
+  BTC.mine
+  @bm3.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
+end
+
+Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, name, asset_alias|
+  meta = {
+    "owner" => friend,
+  }
+  @owner_b = friend
+  instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, friend)
+  @bm4.setup_issue_args(name: name, meta: meta, quantity: amount, identity: @owner_b)
+  @bm4.issue(again: false)
+  @bm4.tx_id = @bm4.response["issueIds"].first
+  BTC.mine
+  @bm4.wait_tx_status(id: @bm4.tx_id, exp_status: "confirmed")
+
+  @bm4.share_amount = amount
+  @bm4.share
+  @bm4.pay(wallet: @wallet, crypto: "BTC")
+  BTC.mine
+  @bm4.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
+end
+
+When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, first_asset, friend, second_amount, second_asset|
+  @bm3.grant(receiver: friend, quantity: first_amount)
+  @bm3.counter_sign_grant(friend)
+  @bm3.pay(wallet: @wallet, crypto: "BTC")
+  BTC.mine
+  @bm3.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
+
+  @bm4.grant(receiver: @bm4.default_identity, quantity: second_amount)
+  @bm4.counter_sign_grant(@bm4.default_identity)
+  @bm4.pay(wallet: @wallet, crypto: "BTC")
+  BTC.mine
+  @bm4.wait_tx_status(id: @bm4.tx_id, exp_status: "confirmed")
+end
+
+Then(/^I have "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |first_amount, first_asset, second_amount, second_asset|
+  id, balance_a = @bm3.balance
+  id, balance_b = @bm4.balance
+
+  expect(balance_a).to eq(first_amount)
+  expect(balance_b).to eq(second_amount)
+end
+
+Then(/^"(.*)" has "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |friend, first_amount, first_asset, second_amount, second_asset|
+  id, balance_a = @bm3.balance(@bm3.share_id, "Foo")
+  id, balance_b = @bm4.balance(@bm4.share_id, "Foo")
+
+  expect(balance_a).to eq(first_amount)
+  expect(balance_b).to eq(second_amount)
+end

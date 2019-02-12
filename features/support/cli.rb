@@ -17,7 +17,7 @@ module Cli
     def reset_cli
       reset_var_list.each { |var| var = nil }
       # initialize payment keys, it will be used to check if crypto payment is supported
-      @payments = {BTC: "", LTC: ""}
+      @payments = { BTC: "", LTC: "" }
     end
 
     def reset_var_list
@@ -30,7 +30,8 @@ module Cli
       "bitmark-cli"
     end
 
-    def cli_base_cmd(identity = default_identity)
+    # TODO: use single parameter for identity decision
+    def cli_base_cmd
       "#{cli} -c #{cli_conf} -i '#{identity}' -p #{password}"
     end
 
@@ -39,10 +40,11 @@ module Cli
       resp["identities"].map { |i| i["name"] }
     end
 
-    def setup_issue_args(name:, meta:, quantity:)
+    def setup_issue_args(name:, meta:, quantity:, identity: default_identity)
       @asset_name = name
       @asset_quantity = quantity
       @asset_meta = meta
+      @identity = identity
     end
 
     # genesis block record is currently not on chain, so when test sync between different
@@ -156,17 +158,20 @@ module Cli
     #   ]
     # }
     def balance(share = share_id, identity = default_identity)
+      # TODO: this function is ambiguous, it gueses the identity and id
       cmd = balance_cmd(share, identity)
       resp = JSON.parse(`#{cmd}`)
       puts "cli balance response: #{resp}"
       self.share_info = resp["balances"]
       item = share_info.first
       [item["shareId"], item["confirmed"]]
+      # TODO: the sequence is ambiguous, need to be refactored
     end
 
     # balance will return all balances from that point, so limit count to 1
-    def balance_cmd(share, identity)
-      cmd = "#{cli_base_cmd(identity)} balance -s #{share} -c 1"
+    def balance_cmd(share, id)
+      @identity = id
+      cmd = "#{cli_base_cmd} balance -s #{share} -c 1"
       puts "balance command: #{cmd}"
       cmd
     end
@@ -225,10 +230,14 @@ module Cli
     end
 
     def counter_sign_grant(receiver)
+      @identity = receiver
       cmd = counter_sign_cmd(receiver)
       puts "counter sign grant command: #{cmd}"
       resp = `#{cmd}`
-      return resp if resp.include?("error")
+      if resp.include?("error")
+        puts "response with error: #{resp}"
+        return resp
+      end
 
       self.response = JSON.parse(resp)
       puts "counter sign grant cli result: #{response}"
@@ -236,7 +245,8 @@ module Cli
     end
 
     def counter_sign_cmd(receiver)
-      "#{cli_base_cmd(receiver)} countersign -t #{tx_id} 2>&1"
+      @identity = receiver
+      "#{cli_base_cmd} countersign -t #{tx_id} 2>&1"
     end
 
     def transfer_cmd(args)
@@ -266,8 +276,9 @@ module Cli
 
     def grant(receiver:, quantity:)
       cmd = grant_cmd(receiver: receiver, quantity: quantity)
-      @response = JSON.parse(`#{cmd}`)
-      puts "grant cli result:#{response}"
+      resp = `#{cmd}`
+      puts "cli response: #{resp}"
+      @response = JSON.parse(resp)
       extract_grant_response
       tx_info
     end

@@ -67,6 +67,10 @@ def do_prev_issue
   @bm3.issue(again: true)
 end
 
+# I put too many dependency there...
+# what if I want to change the instance?
+# the code glues instance variable and instance method together...
+# TODO: fix the dependency
 def set_tx_id_from_response
   # raise error is empty or error message
   if @bm3.response.empty?

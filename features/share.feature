@@ -19,13 +19,10 @@ Feature: Create share by bitmark-client
     And I have "170" shares of asset
     And I am not allowed to grant "200" shares of asset to "Foo"
 
-  # Scenario: Swap shares
-  #   Given I have "100" shares of asset A - "The School of Athens"
-  #   And "Foo" has "200" shares of asset B - "Girl with a Pearl Earring"
-  #   When I exchange "60" shares of asset A for "30" shares of asset B
-  #   Then I have "40" shares of asset A and "30" shares of asset B
-  #   And "Foo" has "60" shares of asset A and "170" shares of asset B
-
-
-# double spend?
-    # fork and an transaction is missing, transfer again
+  @aaron
+  Scenario: Swap shares
+    Given I have "100" shares of asset "The School of Athens" - A
+    And "Foo" has "200" shares of asset "Girl with a Pearl Earring" - B
+    When I exchange "60" shares of asset "A" with "Foo" for "30" shares of asset "B"
+    Then I have "40" shares of asset "A", "30" shares of asset "B"
+    And "Foo" has "60" shares of asset "A", "170" shares of asset "B"
