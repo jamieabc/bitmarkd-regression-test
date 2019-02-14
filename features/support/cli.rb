@@ -355,7 +355,9 @@ module Cli
     end
 
     def share_cmd
-      "#{cli_base_cmd} share -t #{tx_id} -q #{share_amount}"
+      cmd = "#{cli_base_cmd} share -t #{tx_id} -q #{share_amount}"
+      puts "share command: #{cmd}"
+      cmd
     end
 
     def grant_cmd(id = share_id, before_blk = 0, receiver:, quantity:)
