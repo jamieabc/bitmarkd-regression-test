@@ -19,7 +19,6 @@ Feature: Create share by bitmark-client
     And I have "170" shares of asset
     And I am not allowed to grant "200" shares of asset to "Foo"
 
-  @aaron
   Scenario: Swap shares
     Given I have "100" shares of asset "The School of Athens" - A
     And "Foo" has "200" shares of asset "Girl with a Pearl Earring" - B
