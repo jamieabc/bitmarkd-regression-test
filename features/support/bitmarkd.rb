@@ -1,4 +1,3 @@
-gem "openssl"
 require "openssl"
 require "socket"
 require "rspec"
