@@ -349,7 +349,7 @@ class Bitmarkd
   end
 
   def self.start_interval
-    200
+    240
   end
 
   def self.stop_interval
