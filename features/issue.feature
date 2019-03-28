@@ -15,9 +15,8 @@ Feature: Create issue by bitmark-cli
     Examples: Successful examples
       Necessary fields are provided
 
-      | name     | amount | key     | value   |
-      | "Irises" | "1"    | "owner" | "Bob"   |
-      | ""       | "1"    | "owner" | "Alice" |
+      | name     | amount | key     | value |
+      | "Irises" | "1"    | "owner" | "Bob" |
 
   Scenario Outline: Issue with missing parameters
     Given I have asset <name>, amount <amount>, metadata <key> to be <value>
@@ -28,6 +27,7 @@ Feature: Create issue by bitmark-cli
       asset name and metadata are both required.
 
       | name       | amount | key     | value   | error message            |
+      | ""         | "1"    | "owner" | "James" | "asset name is required" |
       | "Failed 1" | "1"    | ""      | ""      | "metadata is not map"    |
       | "Failed 2" | "1"    | "owner" | ""      | "metadata is not map"    |
       | "Failed 3" | "1"    | ""      | "Sam"   | "metadata is not map"    |
