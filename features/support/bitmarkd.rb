@@ -48,7 +48,12 @@ class Bitmarkd
     raise "#{name} stopped" if stopped?
 
     http = create_http
-    resp = http.get(status_uri)
+    begin
+      resp = http.get(status_uri)
+    rescue Exception => e
+      puts "#{name} http not ready"
+      return ""
+    end
 
     unless resp.kind_of?(Net::HTTPSuccess)
       puts "status error response: #{resp.body}"
