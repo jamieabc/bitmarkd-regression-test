@@ -45,7 +45,7 @@ class Bitmarkd
   end
 
   def status
-    raise "#{name} stopped" if stopped?
+    return "" if stopped?
 
     http = create_http
     begin
