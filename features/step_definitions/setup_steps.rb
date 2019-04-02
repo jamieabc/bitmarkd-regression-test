@@ -14,7 +14,13 @@ end
 
 Given(/^some bitmarkds already working normally$/) do
   Bitmarkd.start_all(@bm3, @bm4, @bm5)
-  @bm3.issue_first_record if @bm3.empty_record?
+  if @bm3.empty_record?
+    @bm3.issue_first_record
+    raise "Issue failed without response" if @bm3.response.empty?
+    @bm3.tx_id = @bm3.response["issueIds"].first
+    BTC.mine
+    @bm3.wait_tx_status id: @bm3.tx_id, exp_status: "confirmed"
+  end
 end
 
 Given(/^wallet has enough balance to pay$/) do
