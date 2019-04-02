@@ -235,7 +235,7 @@ class Bitmarkd
     return unless backup_exist?
 
     cd_cmd = enter_dir_cmd
-    rm_cmd = "rm -r #{data_dir}"
+    rm_cmd = "rm -rf #{data_dir}"
     change_cmd = "cp -r #{data_backup_dir} #{data_dir}"
 
     cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
