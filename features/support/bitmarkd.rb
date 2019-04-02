@@ -50,7 +50,7 @@ class Bitmarkd
     http = create_http
     begin
       resp = http.get(status_uri)
-    rescue Exception => e
+    rescue
       puts "#{name} http not ready"
       return ""
     end
