@@ -1,17 +1,15 @@
 #!/bin/sh
 
 conf_dir="conf"
+binary_dir="bin"
 # bitcoin_config="${HOME}/${conf_dir}/bitcoin.conf"
 bitcoin_dir="${HOME}/.bitcoin"
-bitcoin_config="${HOME}/bin/conf/bitcoin.conf"
 # litecoin_config="${HOME}/${conf_dir}/litecoin.conf"
 litecoin_dir="${HOME}/.litecoin"
-litecoin_config="${HOME}/bin/conf/litecoin.conf"
+litecoin_pid="${HOME}/${binary_dir}/litecoind.pid"
 btc_addr=modnSoevy3wuZoHCAEpqPjrXjjUb3qqwuw
 ltc_addr=mujyVMutzD9RWe67eSq49XLMpoMKNthR32
 wallet_path=${HOME}/.config/wallet/wallet.conf
-
-ERROR_CODE=1
 
 sync_wallet () {
     WALLET_PASSWORD=12345678 bitmark-wallet -C $wallet_path btc -t sync
@@ -27,7 +25,7 @@ done
 
 # create default data directory
 if [ ! -d "${bitcoin_dir}" ]; then
-    printf "${bitcoin_dir} directory not exist, creating...\n"
+    printf "bitcoin directory not exist, creating...\n"
     mkdir "${bitcoin_dir}"
 fi
 
@@ -55,7 +53,7 @@ else
     exit $ERROR_CODE
 fi
 
-# stop litecoind
+# terminate litecoind
 while pgrep litecoind >/dev/null
 do
     litecoin-cli stop
@@ -81,7 +79,6 @@ if [ -d "${litecoin_dir}/regtest" ]; then
 fi
 
 # start litecoind
-printf "\nStart litecoind...\n"
 litecoind -daemon
 sleep 2
 
@@ -97,7 +94,9 @@ sleep 5
 sync_wallet
 
 # mine for some coins
-bitcoin-cli generatetoaddress 200 $btc_addr > /dev/null 2>&1
-litecoin-cli generatetoaddress 200 $ltc_addr > /dev/null 2>&1
+sleep 5
+printf "generating coins..."
+bitcoin-cli generatetoaddress 200 $btc_addr
+litecoin-cli generatetoaddress 200 $ltc_addr
 
 sync_wallet

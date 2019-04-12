@@ -1,14 +1,14 @@
 #!/usr/local/bin/bash
 set -e
 
-SUCCESS_CODE=0
 ERROR_CODE=1
+SUCCESS_CODE=0
 
 # stop existing running bitmarkd
 while pgrep bitmarkd > /dev/null
 do
-    echo "stopping bitmarkd..."
-    pkill bitmarkd
+    printf "stopping bitmarkd..."
+    pkill -9 bitmarkd
 
     # wait 5 seconds to check
     printf "checking..."
@@ -24,7 +24,6 @@ bin_dir="${GOPATH}/bin"
 # remove existing bitmarkd
 [ -d "${package_dir}" ] && go clean "${package}"
 [ -d "${package_dir}" ] && rm -rf "${package_dir}"
-
 # remove executable files if any exist
 [ -f "${GOPATH}/bin/bitmarkd" ] && rm "${GOPATH}/bin/bitmarkd"
 [ -f "${GOPATH}/bin/bitmark-cli" ] && rm "${GOPATH}/bin/bitmark-cli"
@@ -52,7 +51,7 @@ go install -v ./...
 
 if [ ! -f "${bin_dir}/bitmarkd" ]; then
     printf "bitmarkd build fail..."
-    exit $ERROR_CODE
+    exit ERROR_CODE
 else
     printf "bitmarkd build success"
 fi
@@ -64,7 +63,7 @@ if [ ! -d "${config_dir}" ]; then
 fi
 
 # generate bitmarkd config
-printf "preparing bitmarkd environment..."
+printf "generating bitmarkd environment..."
 array=("1" "2" "3" "4" "5")
 for number in "${array[@]}"
 do
@@ -75,7 +74,10 @@ do
         # remove backup directory if exist
         [ -d "${dir}/data-backup" ] && rm -r "${dir}/data-backup"
 
-        [ -d "${dir}/data" ] && mv "${dir}/data" "${dir}/data-backup"
+        #mv "${dir}/data" "${dir}/data-backup"
+	rm -rf "${dir}/data"
+	cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data"
+	#cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data-backup"
     fi
 
     # remove existing log files
@@ -83,5 +85,8 @@ do
 
     # remove peer data
     [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
+
+    # remove cache data
+    [ -e "${dir}/reservoir-local.cache" ] && rm "${dir}/reservoir-local.cache"
 done
 exit $SUCCESS_CODE

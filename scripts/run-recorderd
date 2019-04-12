@@ -4,7 +4,7 @@ recorderd_dir="${HOME}/.config/recorderd"
 recorderd_file="recorderd.conf"
 
 if pgrep recorderd >/dev/null; then
-    printf "\nrecorderd is already started\n"
+    echo recorderd is already started
 else
     while true;
     do
@@ -13,12 +13,12 @@ else
         fi
 
         cd "${recorderd_dir}"
-        printf "starting recorderd..."
+        echo starting recorderd...
         nohup recorderd --config-file="${recorderd_file}" >/dev/null 2>&1 &
 
         # wait 5 seconds to check
         echo checking recroderd runing status...
         sleep 5
     done
-    printf "recorderd start success\n"
+    echo recorderd start success
 fi

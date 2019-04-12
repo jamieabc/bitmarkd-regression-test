@@ -6,28 +6,30 @@ bin_dir="${GOPATH}/bin"
 config_dir="${HOME}/.config"
 recorderd_dir="${config_dir}/recorderd"
 
-ERROR_CODE=1
-SUCCESS_CODE=0
-
-printf "\nSetup recorderd...\n"
-
 # check if recorderd is built
 if [ ! -f "${bin_dir}/recorderd" ]; then
-    printf "recorderd build fail..."
-    exit $ERROR_CODE
+    echo recorderd build fail...
+    exit -1
 else
-    printf "recorderd build success"
+    echo recorderd build success
+fi
+
+# make sure recorderd config file exist
+if [ -f "${recorderd_dir}/recorderd.conf" ]; then
+    echo recorder config file exist, do nothing...
+    exit 0
 fi
 
 # stop existing running recorderd
 for pid in $(pgrep recorderd)
 do
-    printf "stop recorderd process ${pid}..."
+    echo "stop recorderd process ${pid}..."
     pkill pid
 done
 
 # create data directory if not exist
-if [ ! -d "${config_dir}/recorderd" ]; then
+
+if [ ! -d "${config_dir}" ] || [ ! -d "${config_dir}/recorderd" ]; then
     mkdir -p "${config_dir}/recorderd"
 fi
 
@@ -43,8 +45,3 @@ fi
 if [ ! -f "${recorderd_dir}/recorderd.public" ]; then
     recorderd --config-file=recorderd.conf generate-identity
 fi
-
-# return original directory
-cd - 1
-
-exit $SUCCESS_CODE
