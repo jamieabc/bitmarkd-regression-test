@@ -85,6 +85,8 @@ do
     fi
 done
 
+printf "\n"
+
 ~/bin/setup-recorderd
 check_script_result "setup-recorderd"
 
@@ -95,6 +97,7 @@ check_script_result "run-recorderd"
 
 # check connection, at leat 3 servers should be connected
 array=("1" "2" "3" "4" "5")
+found=false
 for number in "${array[@]}"
 do
     normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
@@ -106,3 +109,8 @@ done
 
 # end of time calculation: bitmarkd connect
 calculate_time
+
+if [ "$found" = true ]; then
+    printf "bitmarkd cannot connected"
+    exit $ERROR_CODE
+fi
