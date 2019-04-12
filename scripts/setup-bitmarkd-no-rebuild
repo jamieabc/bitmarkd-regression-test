@@ -1,0 +1,45 @@
+#!/usr/local/bin/bash
+set -e
+
+conf_dir="conf"
+
+# stop existing running bitmarkd
+while pgrep bitmarkd >/dev/null
+do
+    echo stopping bitmarkd...
+    pkill bitmarkd
+
+    # wait 5 seconds to check
+    echo checking...
+    sleep 5
+done
+echo all bitmarkd are stopped
+
+# generate bitmarkd config
+echo "generating bitmarkd configurations..."
+array=("1" "2" "3" "4" "5")
+for number in "${array[@]}"
+do
+    # due to new bitcoin config, there exist some problem parsing bitcoin rpc port
+    # disable following line for now
+    printf "\nSkip generating new config...\n"
+    # ~/bin/generate-bitmarkd-configuration -c local -n freebuilder.bitmark.lan -b "${HOME}/conf/bitcoin.conf" -l "${HOME}/conf/litecoin.conf" -u "${number}"
+
+    # make sure every time a clean start, backup data directory
+    printf "\nBacking up bitmarkd ${number} data directory, remove log/peer data...\n"
+    dir="${config_dir}/bitmarkd${number}"
+    if [ -d "${dir}/data" ]; then
+        # remove backup directory if exist
+        [ -d "${dir}/data-backup" ] && rm -r "${dir}/data-backup"
+
+        [ -d "${dir}/data" ] && mv "${dir}/data" "${dir}/data-backup"
+    fi
+
+    # remove existing log files
+    [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
+
+    # remove peer data
+    [ -e "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
+done
+
+exit 0
