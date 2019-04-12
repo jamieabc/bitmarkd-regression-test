@@ -1,4 +1,4 @@
-#!/usr/local/bin/bash
+#!/usr/bin/env bash
 
 export GOPATH="${HOME}/gocode"
 export PATH="${GOPATH}/bin":$PATH
@@ -99,7 +99,7 @@ array=("1" "2" "3" "4" "5")
 for number in "${array[@]}"
 do
     normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
-    if [ $normal_mode -ne 0 ]; then
+    if [ $normal_mode -ne $SUCCESS_CODE ]; then
         printf "\nnode ${number} in Normal mode, cli port 2${number}30, https port 2${number}31\n"
         node_number=$number
         break 1                 # break 1 levels of loop
