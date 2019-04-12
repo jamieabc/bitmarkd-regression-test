@@ -114,3 +114,5 @@ if [ "$found" = true ]; then
     printf "bitmarkd cannot connected"
     exit $ERROR_CODE
 fi
+
+trap "clean_up" SIGINT SIGTERM
