@@ -96,7 +96,6 @@ printf "\nRun recorderd...\n"
 check_script_result "run-recorderd"
 
 # check connection, at leat 3 servers should be connected
-array=("1" "2" "3" "4" "5")
 found=false
 for number in "${array[@]}"
 do
