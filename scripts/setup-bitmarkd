@@ -1,0 +1,87 @@
+#!/usr/local/bin/bash
+set -e
+
+SUCCESS_CODE=0
+ERROR_CODE=1
+
+# stop existing running bitmarkd
+while pgrep bitmarkd > /dev/null
+do
+    echo "stopping bitmarkd..."
+    pkill bitmarkd
+
+    # wait 5 seconds to check
+    printf "checking..."
+    sleep 5
+done
+printf "all bitmarkd are stopped"
+
+# compile bitmarkd
+package="github.com/bitmark-inc/bitmarkd"
+package_dir="${GOPATH}/src/${package}"
+bin_dir="${GOPATH}/bin"
+
+# remove existing bitmarkd
+[ -d "${package_dir}" ] && go clean "${package}"
+[ -d "${package_dir}" ] && rm -rf "${package_dir}"
+
+# remove executable files if any exist
+[ -f "${GOPATH}/bin/bitmarkd" ] && rm "${GOPATH}/bin/bitmarkd"
+[ -f "${GOPATH}/bin/bitmark-cli" ] && rm "${GOPATH}/bin/bitmark-cli"
+[ -f "${GOPATH}/bin/bitmark-info" ] && rm "${GOPATH}/bin/bitmark-info"
+[ -f "${GOPATH}/bin/bitmark-dumpdb" ] && rm "${GOPATH}/bin/bitmark-dumpdb"
+
+# download latest bitmarkd
+printf "downloading bitmarkd..."
+go get -u -v "${package}" || true # avoid error message or no Go files in ...
+cd ${package_dir}
+go get -u -v ./...
+cd ~
+
+printf "entering directory ${package_dir}"
+cd "${package_dir}"
+
+# setup third party libraries
+printf "\nsetup third party libraries"
+# git submodule update --init
+
+# compile
+printf "compiling..."
+go build -v ./...
+go install -v ./...
+
+if [ ! -f "${bin_dir}/bitmarkd" ]; then
+    printf "bitmarkd build fail..."
+    exit $ERROR_CODE
+else
+    printf "bitmarkd build success"
+fi
+
+# create config directory if not exist
+config_dir="${HOME}/.config"
+if [ ! -d "${config_dir}" ]; then
+    mkdir -p "${config_dir}"
+fi
+
+# generate bitmarkd config
+printf "preparing bitmarkd environment..."
+array=("1" "2" "3" "4" "5")
+for number in "${array[@]}"
+do
+    # make sure every time a clean start, backup data directory
+    printf "\nBacking up bitmarkd ${number} data directory, remove log/peer data..."
+    dir="${config_dir}/bitmarkd${number}"
+    if [ -d "${dir}/data" ]; then
+        # remove backup directory if exist
+        [ -d "${dir}/data-backup" ] && rm -r "${dir}/data-backup"
+
+        [ -d "${dir}/data" ] && mv "${dir}/data" "${dir}/data-backup"
+    fi
+
+    # remove existing log files
+    [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
+
+    # remove peer data
+    [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
+done
+exit $SUCCESS_CODE

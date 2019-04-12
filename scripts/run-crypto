@@ -1,0 +1,103 @@
+#!/bin/sh
+
+conf_dir="conf"
+# bitcoin_config="${HOME}/${conf_dir}/bitcoin.conf"
+bitcoin_dir="${HOME}/.bitcoin"
+bitcoin_config="${HOME}/bin/conf/bitcoin.conf"
+# litecoin_config="${HOME}/${conf_dir}/litecoin.conf"
+litecoin_dir="${HOME}/.litecoin"
+litecoin_config="${HOME}/bin/conf/litecoin.conf"
+btc_addr=modnSoevy3wuZoHCAEpqPjrXjjUb3qqwuw
+ltc_addr=mujyVMutzD9RWe67eSq49XLMpoMKNthR32
+wallet_path=${HOME}/.config/wallet/wallet.conf
+
+ERROR_CODE=1
+
+sync_wallet () {
+    WALLET_PASSWORD=12345678 bitmark-wallet -C $wallet_path btc -t sync
+    WALLET_PASSWORD=12345678 bitmark-wallet -C $wallet_path ltc -t sync
+}
+
+# teminate bitcoind
+while pgrep bitcoind >/dev/null
+do
+    bitcoin-cli stop
+    sleep 2
+done
+
+# create default data directory
+if [ ! -d "${bitcoin_dir}" ]; then
+    printf "${bitcoin_dir} directory not exist, creating...\n"
+    mkdir "${bitcoin_dir}"
+fi
+
+# copy config file if not exist
+if [ ! -f "${bitcoin_dir}/bitcoin.conf" ]; then
+    printf "copy bitcoin config into directory...\n"
+    cp "${bitcoin_config}" "${bitcoin_dir}"
+fi
+
+# remove existing regtest data directory
+if [ -d "${bitcoin_dir}/regtest" ]; then
+    printf "remove existing bitcoin regtest directory...\n"
+    rm -r "${bitcoin_dir}/regtest"
+fi
+
+# start bitcoind
+bitcoind -daemon
+sleep 2
+
+# make sure bitcoind is started
+if pgrep bitcoind > /dev/null; then
+    printf "\nbitcoind started...\n"
+else
+    printf "\nbitcoind not started...abort\n"
+    exit $ERROR_CODE
+fi
+
+# stop litecoind
+while pgrep litecoind >/dev/null
+do
+    litecoin-cli stop
+    sleep 2
+done
+
+# create default data directory
+if [ ! -d "${litecoin_dir}" ]; then
+    printf "litecoin directory not exist, creating...\n"
+    mkdir "${litecoin_dir}"
+fi
+
+# copy config file if not exist
+if [ ! -f "${litecoin_dir}/litecoin.conf" ]; then
+    printf "copy litecoin config into directory...\n"
+    cp "${litecoin_config}" "${litecoin_dir}"
+fi
+
+# remove existing regtest data directory
+if [ -d "${litecoin_dir}/regtest" ]; then
+    printf "remove existing litecoin regtest directory...\n"
+    rm -r "${litecoin_dir}/regtest"
+fi
+
+# start litecoind
+printf "\nStart litecoind...\n"
+litecoind -daemon
+sleep 2
+
+# make sure litecoind is started
+if pgrep litecoind > /dev/null; then
+    printf "\nlitecoind started...\n"
+else
+    printf "\nlitecoind not started...abort\n"
+    exit $ERROR_CODE
+fi
+
+sleep 5
+sync_wallet
+
+# mine for some coins
+bitcoin-cli generatetoaddress 200 $btc_addr > /dev/null 2>&1
+litecoin-cli generatetoaddress 200 $ltc_addr > /dev/null 2>&1
+
+sync_wallet

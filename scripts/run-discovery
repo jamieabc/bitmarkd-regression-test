@@ -1,0 +1,23 @@
+#!/bin/sh
+
+conf_dir="${HOME}/conf"
+log_dir="${HOME}/log"
+conf_filename="discovery.conf"
+
+# configure file
+config="${conf_dir}/${conf_filename}"
+
+# terminate discovery if already running
+if pgrep discovery; then
+    echo discovery is already running, terminate it...
+    pkill discovery
+fi
+
+if pgrep discovery; then
+    echo discovery is already started...
+else
+    echo starting discovery...
+    [ -d "${log_dir}/discovery.log" ] && rm -f "${log_dir}"
+    # run the program
+    nohup discovery --conf="${config}" 0<&- &>/dev/null &
+fi

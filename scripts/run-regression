@@ -1,0 +1,93 @@
+#!/usr/local/bin/bash
+
+export GOPATH="${HOME}/gocode"
+export PATH="${GOPATH}/bin":$PATH
+
+ERROR_CODE=1
+
+# calculate time
+calculate_time() {
+    if [ "$start_time" == "" ]; then
+        start_time=$(date +%s)
+    elif [ "$end_time" == "" ]; then
+        end_time=$(date +%s)
+    else
+        printf "\nIt takes %s seconds bitmarkd connect\n" "$(( $end_time - $start_time ))"
+    fi
+}
+
+# run crypto programs
+~/bin/run-crypto
+
+# exit program if bitcoind or litecoind not exist
+
+# start of time calculation: bitmarkd connect
+start_time=""
+end_time=""
+calculate_time
+
+processes=("bitcoind" "litecoind")
+for process in "${processes[@]}"
+do
+    if ! pgrep "$process" &> /dev/null; then
+        printf "\n%s is not started, abort...\n" "$process"
+        exit $ERROR_CODE
+    fi
+done
+
+# setup bitmarkd if bitmarkd config not exist
+~/bin/setup-bitmarkd
+if [ $? -ne 0 ]; then
+    printf "\nAbort..."
+    exit $ERROR_CODE
+fi
+
+# run bitmarkd
+array=("1" "2" "3" "4" "5")
+for number in "${array[@]}"
+do
+    printf "\nStart bitmarkd ${number}"
+    cd "${HOME}/.config/bitmarkd${number}"
+    nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
+
+    # wait for bitmarkd to initialize tcp, only for node number 3, 4
+    if [ "$number" != "1" ] && [ "$number" != "5" ]; then
+        sleep 150
+    fi
+done
+
+printf "\nAll bitmarkds are started...\n"
+
+# setup recorderd if recorderd config not exist
+
+~/bin/setup-recorderd
+
+# run recorderd
+printf "\nRun recorderd...\n"
+~/bin/run-recorderd
+
+# check connection, at leat 3 servers should be connected
+node_number=0
+array=("1" "2" "3" "4" "5")
+for number in "${array[@]}"
+do
+    normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
+    if [ $normal_mode -ne 0 ]; then
+        printf "\nnode ${number} in Normal mode, cli port 2${number}30, https port 2${number}31\n"
+        node_number=$number
+        calculate_time
+        break 1                 # break 1 levels of loop
+    fi
+done
+printf "nodes are not connected...\n"
+
+# end of time calculation: bitmarkd connect
+calculate_time
+
+# update cli config, the existing port may not fit current staus
+# cd "${HOME}/conf"
+# cli_filename="cli.conf"
+# cli_port="2${node_number}30"
+# if [ -f "${cli_filename}" ]; then
+#     sed -i -- "s/\"connect\": \".*/\"connect\": \"127.0.0.1:${cli_port}\",/g" "${cli_filename}"
+# fi
