@@ -103,6 +103,7 @@ do
     normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
     if [ $normal_mode -ne $SUCCESS_CODE ]; then
         printf "\nnode ${number} in Normal mode, cli port 2${number}30, https port 2${number}31\n"
+        found=true
         break 1                 # break 1 levels of loop
     fi
 done
