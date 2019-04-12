@@ -44,6 +44,8 @@ clean_up() {
     done
 }
 
+trap "clean_up" SIGINT SIGTERM
+
 # run crypto programs
 ~/bin/run-crypto
 check_script_result "run-crypto"
@@ -114,5 +116,3 @@ if [ "$found" = true ]; then
     printf "bitmarkd cannot connected"
     exit $ERROR_CODE
 fi
-
-trap "clean_up" SIGINT SIGTERM
