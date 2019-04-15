@@ -20,7 +20,7 @@ calculate_time() {
 check_script_result() {
     if [ $# -ne 1 ]; then
         printf "error argument, expect 1 but get $#"
-        exit $ERROR_CODE
+        return $ERROR_CODE
     fi
 
     if [ $? -ne $SUCCESS_CODE ]; then
@@ -114,5 +114,6 @@ calculate_time
 
 if [ "$found" = "false" ]; then
     printf "bitmarkd cannot connected"
+    clean_up
     exit $ERROR_CODE
 fi
