@@ -112,7 +112,7 @@ done
 # end of time calculation: bitmarkd connect
 calculate_time
 
-if [ "$found" = true ]; then
+if [ "$found" = "false" ]; then
     printf "bitmarkd cannot connected"
     exit $ERROR_CODE
 fi
