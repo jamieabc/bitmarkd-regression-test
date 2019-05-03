@@ -24,7 +24,7 @@ check_script_result() {
     fi
 
     if [ $? -ne $SUCCESS_CODE ]; then
-        printf "execute $1 fail, abort..."
+        printf "execute $1 fail, abort...\n"
         clean_up
         exit $ERROR_CODE
     fi
@@ -79,15 +79,13 @@ do
 
     # wait for bitmarkd to initialize tcp, only for node number 3, 4
     if [ "$number" == "3" ] || [ "$number" == "4" ]; then
-        sleep 150
+        sleep 200
     fi
 
     if [ "$number" == "2" ]; then
-        sleep 230
+        sleep 320
     fi
 done
-
-printf "\n"
 
 ~/bin/setup-recorderd
 check_script_result "setup-recorderd"
@@ -104,7 +102,7 @@ do
     normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
     if [ $normal_mode -ne $SUCCESS_CODE ]; then
         printf "\nnode ${number} in Normal mode, cli port 2${number}30, https port 2${number}31\n"
-        found=true
+	found=true
         break 1                 # break 1 levels of loop
     fi
 done
@@ -113,7 +111,6 @@ done
 calculate_time
 
 if [ "$found" = "false" ]; then
-    printf "bitmarkd cannot connected"
-    clean_up
+    printf "bitmarkd cannot connected\n"
     exit $ERROR_CODE
 fi

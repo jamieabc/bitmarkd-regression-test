@@ -6,6 +6,8 @@ bin_dir="${GOPATH}/bin"
 config_dir="${HOME}/.config"
 recorderd_dir="${config_dir}/recorderd"
 
+printf "\n"
+
 # check if recorderd is built
 if [ ! -f "${bin_dir}/recorderd" ]; then
     echo recorderd build fail...

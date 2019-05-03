@@ -96,7 +96,7 @@ sync_wallet
 # mine for some coins
 sleep 5
 printf "generating coins..."
-bitcoin-cli generatetoaddress 200 $btc_addr
-litecoin-cli generatetoaddress 200 $ltc_addr
+bitcoin-cli generatetoaddress 105 $btc_addr
+litecoin-cli generatetoaddress 105 $ltc_addr
 
 sync_wallet
