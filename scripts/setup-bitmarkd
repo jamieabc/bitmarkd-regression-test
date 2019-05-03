@@ -33,11 +33,11 @@ bin_dir="${GOPATH}/bin"
 # download latest bitmarkd
 printf "downloading bitmarkd..."
 go get -u -v "${package}" || true # avoid error message or no Go files in ...
-cd ${package_dir}
+cd "${package_dir}"
 go get -u -v ./...
 cd ~
 
-printf "entering directory ${package_dir}"
+printf "entering directory %s" "${package_dir}"
 cd "${package_dir}"
 
 # setup third party libraries
@@ -51,7 +51,7 @@ go install -v ./...
 
 if [ ! -f "${bin_dir}/bitmarkd" ]; then
     printf "bitmarkd build fail..."
-    exit ERROR_CODE
+    exit $ERROR_CODE
 else
     printf "bitmarkd build success"
 fi
@@ -81,7 +81,8 @@ do
     fi
 
     # remove existing log files
-    [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
+    # [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
+    [ -d "${dir}/log" ] && rm "${dir}/log/*"
 
     # remove peer data
     [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
