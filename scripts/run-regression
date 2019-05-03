@@ -117,11 +117,11 @@ check_bitmarkd() {
 
 }
 
-# start of time calculation: bitmarkd connect
-calculate_time
-
 run_crypto
 check_crypto
+
+# start of time calculation: bitmarkd connect
+calculate_time
 
 setup_bitmarkd
 run_bitmarkd
