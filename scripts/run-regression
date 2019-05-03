@@ -6,6 +6,9 @@ export PATH="${GOPATH}/bin":$PATH
 SUCCESS_CODE=0
 ERROR_CODE=1
 
+start_time=""
+end_time=""
+
 # calculate time
 calculate_time() {
     if [ "$start_time" == "" ]; then
@@ -47,65 +50,87 @@ clean_up() {
 trap "clean_up" SIGINT SIGTERM
 
 # run crypto programs
-~/bin/run-crypto
-check_script_result "run-crypto"
+run_crypto() {
+    ~/bin/run-crypto
+    check_script_result "run-crypto"
+}
 
-# start of time calculation: bitmarkd connect
-start_time=""
-end_time=""
-calculate_time
-
-processes=("bitcoind" "litecoind")
-for process in "${processes[@]}"
-do
-    if ! pgrep "$process" &> /dev/null; then
-        printf "\n%s is not started, abort...\n" "$process"
-        clean_up
-        exit $ERROR_CODE
-    fi
-done
+check_crypto() {
+    processes=("bitcoind" "litecoind")
+    for process in "${processes[@]}"
+    do
+        if ! pgrep "$process" &> /dev/null; then
+            printf "\n%s is not started, abort...\n" "$process"
+            clean_up
+            exit $ERROR_CODE
+        fi
+    done
+}
 
 # setup bitmarkd if bitmarkd config not exist
-~/bin/setup-bitmarkd
-check_script_result "setup-bitmarkd"
+setup_bitmarkd () {
+    ~/bin/setup-bitmarkd
+    check_script_result "setup-bitmarkd"
+}
 
-# run bitmarkd
-array=("1" "2" "3" "4" "5")
-for number in "${array[@]}"
-do
-    printf "\nStart bitmarkd ${number}"
-    cd "${HOME}/.config/bitmarkd${number}"
-    nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
+run_bitmarkd() {
+    array=("1" "2" "3" "4" "5")
+    for number in "${array[@]}"
+    do
+        printf "\nStart bitmarkd %s" "${number}"
+        cd "${HOME}/.config/bitmarkd${number}"
+        nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
 
-    # wait for bitmarkd to initialize tcp, only for node number 3, 4
-    if [ "$number" == "3" ] || [ "$number" == "4" ]; then
-        sleep 200
-    fi
+        # wait for bitmarkd to initialize tcp, only for node number 3, 4
+        if [ "$number" == "3" ] || [ "$number" == "4" ]; then
+            sleep 200
+        fi
 
-    if [ "$number" == "2" ]; then
-        sleep 320
-    fi
-done
+        if [ "$number" == "2" ]; then
+            sleep 320
+        fi
+    done
+}
 
-~/bin/setup-recorderd
+setup_recorderd() {
+    ~/bin/setup-recorderd
+}
+
+run_recorderd() {
+    # run recorderd
+    printf "\nRun recorderd...\n"
+    ~/bin/run-recorderd
+}
+
+check_bitmarkd() {
+    # check connection, at leat 3 servers should be connected
+    found=false
+    for number in "${array[@]}"
+    do
+        normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
+        if [ "$normal_mode" != "$SUCCESS_CODE" ]; then
+            printf "\nnode %s in Normal mode, cli port %s, https port %s\n" "${number}" "2${number}30" "2${number}31"
+	        found=true
+            break 1                 # break 1 levels of loop
+        fi
+    done
+
+}
+
+# start of time calculation: bitmarkd connect
+calculate_time
+
+run_crypto
+check_crypto
+
+setup_bitmarkd
+run_bitmarkd
+
+setup_recorderd
 check_script_result "setup-recorderd"
 
-# run recorderd
-printf "\nRun recorderd...\n"
-~/bin/run-recorderd
+run_recorderd
 check_script_result "run-recorderd"
-
-# check connection, at leat 3 servers should be connected
-found=false
-for number in "${array[@]}"
-do
-    normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
-    if [ $normal_mode -ne $SUCCESS_CODE ]; then
-        printf "\nnode ${number} in Normal mode, cli port 2${number}30, https port 2${number}31\n"
-	found=true
-        break 1                 # break 1 levels of loop
-    fi
-done
 
 # end of time calculation: bitmarkd connect
 calculate_time
@@ -114,3 +139,5 @@ if [ "$found" = "false" ]; then
     printf "bitmarkd cannot connected\n"
     exit $ERROR_CODE
 fi
+
+calculate_time
