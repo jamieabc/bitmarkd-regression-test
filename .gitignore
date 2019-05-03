@@ -16,3 +16,9 @@ cli5.conf
 
 wallet.dat
 wallet.conf
+
+# global files
+GPATH
+GRTAGS
+GTAGS
+gtags.files
