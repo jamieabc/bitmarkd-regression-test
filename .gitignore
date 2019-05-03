@@ -1,12 +1,17 @@
 cli1.mac.conf
 cli1.remote.conf
+cli1.conf
 cli2.mac.conf
 cli2.remote.conf
+cli2.conf
 cli3.mac.conf
 cli3.remote.conf
+cli3.conf
 cli4.mac.conf
 cli4.remote.conf
+cli4.conf
 cli5.mac.conf
 cli5.remote.conf
+cli5.conf
 
 wallet.dat
