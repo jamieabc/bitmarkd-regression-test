@@ -1,19 +1,17 @@
 #!/bin/sh
 
-conf_dir="conf"
 binary_dir="bin"
-# bitcoin_config="${HOME}/${conf_dir}/bitcoin.conf"
 bitcoin_dir="${HOME}/.bitcoin"
-# litecoin_config="${HOME}/${conf_dir}/litecoin.conf"
 litecoin_dir="${HOME}/.litecoin"
-litecoin_pid="${HOME}/${binary_dir}/litecoind.pid"
 btc_addr=modnSoevy3wuZoHCAEpqPjrXjjUb3qqwuw
 ltc_addr=mujyVMutzD9RWe67eSq49XLMpoMKNthR32
 wallet_path=${HOME}/.config/wallet/wallet.conf
 
+ERROR_CODE=-1
+
 sync_wallet () {
-    WALLET_PASSWORD=12345678 bitmark-wallet -C $wallet_path btc -t sync
-    WALLET_PASSWORD=12345678 bitmark-wallet -C $wallet_path ltc -t sync
+    WALLET_PASSWORD=12345678 bitmark-wallet -C "$wallet_path" btc -t sync
+    WALLET_PASSWORD=12345678 bitmark-wallet -C "$wallet_path" ltc -t sync
 }
 
 # teminate bitcoind
@@ -31,8 +29,8 @@ fi
 
 # copy config file if not exist
 if [ ! -f "${bitcoin_dir}/bitcoin.conf" ]; then
-    printf "copy bitcoin config into directory...\n"
-    cp "${bitcoin_config}" "${bitcoin_dir}"
+    printf "bitcoin config not exit...abort\n"
+    exit $ERROR_CODE
 fi
 
 # remove existing regtest data directory
@@ -68,8 +66,8 @@ fi
 
 # copy config file if not exist
 if [ ! -f "${litecoin_dir}/litecoin.conf" ]; then
-    printf "copy litecoin config into directory...\n"
-    cp "${litecoin_config}" "${litecoin_dir}"
+    printf "litecoin config not exit...abort\n"
+    exit $ERROR_CODE
 fi
 
 # remove existing regtest data directory

@@ -82,7 +82,7 @@ do
 
     # remove existing log files
     # [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
-    [ -d "${dir}/log" ] && rm "${dir}/log/*"
+    [ -d "${dir}/log" ] && rm -f "${dir}/log/*"
 
     # remove peer data
     [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
