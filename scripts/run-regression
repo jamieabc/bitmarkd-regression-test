@@ -76,12 +76,16 @@ run_bitmarkd() {
         nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
 
         # wait for bitmarkd to initialize tcp, only for node number 3, 4
-        if [ "$number" == "3" ] || [ "$number" == "4" ]; then
+        if [ "$number" = "3" ] || [ "$number" = "4" ]; then
             sleep 200
         fi
 
-        if [ "$number" == "2" ]; then
+        if [ "$number" = "2" ]; then
             sleep 320
+        fi
+
+        if [ "$number" = "5" ]; then
+            sleep 30
         fi
     done
 }
