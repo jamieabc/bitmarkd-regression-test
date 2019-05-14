@@ -91,6 +91,7 @@ Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, 
 end
 
 When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, first_asset, friend, second_amount, second_asset|
+  sleep 2 * Bitmarkd.sleep_interval # incase transaction is not broadcast
   @bm3.grant(receiver: friend, quantity: first_amount)
   @bm3.counter_sign_grant(friend)
   @bm3.pay(wallet: @wallet, crypto: "BTC")
