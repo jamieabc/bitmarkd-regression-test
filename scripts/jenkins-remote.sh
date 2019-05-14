@@ -2,13 +2,21 @@ shared_dir="jenkins"
 regression_env_script="bin/run-regression"
 regression_dir="bitmarkd-regression-test"
 result_file="${shared_dir}/result.json"
-repo="https://git.bitmark.com:8080/system/bitmarkd-regression-test.git"
+repo="https://github.com/jamieabc/bitmarkd-regression-test.git"
 
 ERROR_CODE=1
 
 # setup env variable
 export GOPATH=~/gocode
 export PATH=${GOPATH}/bin:$PATH
+
+kill_programs() {
+    printf "terminate programs..."
+    pkill -9 recorderd
+    pkill -9 bitmarkd
+    pkill -9 bitcoind
+    pkill -9 litecoind
+}
 
 printf "\nRemoving previous result...\n"
 if [ -f ~/${result_file} ]; then
@@ -21,6 +29,7 @@ eval ~/$regression_env_script
 # check if regression script executed successfully
 if [ $? -ne 0 ]; then
     printf "\nregression script execute failed...abort"
+    kill_programs
     exit $ERROR_CODE
 fi
 
@@ -33,12 +42,14 @@ git clone "${repo}"
 # run test cases
 cd ~/${regression_dir}
 echo running cucumber...
-cucumber --fail-fast -g --format json_pretty -o ~/${result_file}
+cucumber --fail-fast -g --format json -o ~/${result_file}
 
 # check cucumber status
 if [ $? -ne 0 ]; then
     cucumber_fail="true"
 fi
+
+kill_programs
 
 if [ ! -f ~/${result_file} ]; then
     printf "${result_file} not exist, abort..."
