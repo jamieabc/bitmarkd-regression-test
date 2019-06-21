@@ -228,7 +228,7 @@ class Bitmarkd
   end
 
   def block_height
-    status["blocks"]["local"].to_i
+    status["block"]["local"].to_i
   end
 
   def restore_backup
