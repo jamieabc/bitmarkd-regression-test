@@ -41,7 +41,7 @@ class Bitmarkd
   end
 
   def empty_record?
-    status["blocks"]["local"] == 1 && status["blocks"]["remote"] == 1
+    status["block"]["local"] == 1 && status["block"]["remote"] == 1
   end
 
   def status
