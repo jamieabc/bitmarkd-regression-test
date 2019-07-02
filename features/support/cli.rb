@@ -120,7 +120,7 @@ module Cli
     end
 
     def gen_fingerprint
-      word = Faker::Lorem.word
+      word = "#{Faker::Lorem.word}-#{Faker::PhoneNumber.phone_number}"
       time = Time.now.getutc.to_s
       @fingerprint = "#{time} #{word}"
     end
