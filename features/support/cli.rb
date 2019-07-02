@@ -62,6 +62,26 @@ module Cli
       issue(again: false, first_record: true)
     end
 
+    def infinite_issue
+      i = 0
+      while true
+        name = Faker::Name.name
+        setup_issue_args(name: name, meta: {"owner" => "me"}, quantity: 1)
+        puts "new issue"
+        issue(again: false, first_record: false)
+        if @response.empty?
+          raise "issue failed with no response"
+        end
+        puts "response: #{@response}"
+
+        @tx_id = @response["issueIds"].first
+        puts "tx id: #{@tx_id}"
+        BTC.mine if (i % 90).zero?
+        sleep 60
+        i += 1
+      end
+    end
+
     def issue(again: false, first_record: false)
       self.response = nil
 
