@@ -65,7 +65,7 @@ module Cli
     def infinite_issue
       i = 0
       while true
-        name = Faker::Name.name
+        name = "#{Faker::Name.name}-#{Faker::PhoneNumber.phone_number}"
         setup_issue_args(name: name, meta: {"owner" => "me"}, quantity: 1)
         puts "new issue"
         issue(again: false, first_record: false)
