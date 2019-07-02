@@ -41,7 +41,7 @@ printf "entering directory %s" "${package_dir}"
 cd "${package_dir}"
 
 # setup third party libraries
-printf "\nsetup third party libraries"
+printf "\nsetup third party libraries\n"
 # git submodule update --init
 
 # compile
