@@ -8,9 +8,9 @@ module Cli
 
   module InstanceMethods
     def init_cli
-      @cli_conf = "cli#{bm_num}.conf"
       @password = "12345678"
       @default_identity = "regression test user"
+      @network = "local"
       reset_cli
     end
 
@@ -32,7 +32,7 @@ module Cli
 
     # TODO: use single parameter for identity decision
     def cli_base_cmd
-      "#{cli} -c #{cli_conf} -i '#{identity}' -p #{password}"
+      "#{cli} -n "#{network}" -i '#{identity}' -p #{password}"
     end
 
     def identities
