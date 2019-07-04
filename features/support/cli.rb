@@ -77,7 +77,7 @@ module Cli
         @tx_id = @response["issueIds"].first
         puts "tx id: #{@tx_id}"
         BTC.mine if (i % 90).zero?
-        sleep 60
+        sleep 1
         i += 1
       end
     end
