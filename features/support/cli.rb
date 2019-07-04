@@ -47,21 +47,6 @@ module Cli
       @identity = identity
     end
 
-    # genesis block record is currently not on chain, so when test sync between different
-    # chains, program hangs because it cannot not distinguish if two chains differ from
-    # the beginning are same or not.
-    # In order to test sync features, I manually setup an issue record that is same
-    # for all tests, think it as a virtual genesis block record.
-    def issue_first_record
-      meta = {
-        "owner" => "me",
-      }
-      setup_issue_args(name: "first asset", meta: meta, quantity: 1)
-      @fingerprint = "first issue record"
-
-      issue(again: false)
-    end
-
     def infinite_issue
       i = 0
       while true
@@ -90,7 +75,7 @@ module Cli
         # clear previous existing result
         cmd = prev_cmd
       else
-        cmd = issue_cmd(first_record)
+        cmd = issue_cmd
         self.prev_cmd = cmd
       end
 
@@ -106,12 +91,12 @@ module Cli
       end
     end
 
-    def issue_cmd(first_record = false)
-      "#{cli_base_cmd} create #{issue_args(first_record)} 2>&1"
+    def issue_cmd
+      "#{cli_base_cmd} create #{issue_args} 2>&1"
     end
 
-    def issue_args(first_record)
-      gen_fingerprint if first_record == false
+    def issue_args
+      gen_fingerprint
       "#{asset_args} #{meta_args} -f \"#{fingerprint}\""
     end
 
