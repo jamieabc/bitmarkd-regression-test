@@ -32,7 +32,7 @@ module Cli
 
     # TODO: use single parameter for identity decision
     def cli_base_cmd
-      "#{cli} -n "#{network}" -i '#{identity}' -p #{password}"
+      "#{cli} -n #{network} -i '#{identity}' -p #{password}"
     end
 
     def identities
