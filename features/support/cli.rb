@@ -59,7 +59,7 @@ module Cli
       setup_issue_args(name: "first asset", meta: meta, quantity: 1)
       @fingerprint = "first issue record"
 
-      issue(again: false, first_record: true)
+      issue(again: false)
     end
 
     def infinite_issue
@@ -68,7 +68,7 @@ module Cli
         name = "#{Faker::Name.name}-#{Faker::PhoneNumber.phone_number}"
         setup_issue_args(name: name, meta: {"owner" => "me"}, quantity: 1)
         puts "new issue"
-        issue(again: false, first_record: false)
+        issue(again: false)
         if @response.empty?
           raise "issue failed with no response"
         end
@@ -82,7 +82,7 @@ module Cli
       end
     end
 
-    def issue(again: false, first_record: false)
+    def issue(again: false)
       self.response = nil
 
       # generate new issue or use previous one
