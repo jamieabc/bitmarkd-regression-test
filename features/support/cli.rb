@@ -175,7 +175,7 @@ module Cli
     # balance will return all balances from that point, so limit count to 1
     def balance_cmd(share, id)
       @identity = id
-      cmd = "#{cli_base_cmd} balance -s #{share} -c 1"
+      cmd = "#{cli_base_cmd} balance -s #{share} -c 1 -o #{id}"
       puts "balance command: #{cmd}"
       cmd
     end
