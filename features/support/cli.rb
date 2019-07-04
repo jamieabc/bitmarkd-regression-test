@@ -36,7 +36,7 @@ module Cli
     end
 
     def identities
-      resp = JSON.parse(`#{cli_base_cmd} info`)
+      resp = JSON.parse(`#{cli_base_cmd} bitmarkd`)
       resp["identities"].map { |i| i["name"] }
     end
 
