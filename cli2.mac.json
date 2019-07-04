@@ -1,0 +1,21 @@
+{
+  "default_identity": "regression test user",
+  "testnet": true,
+  "connections": [
+    "127.0.0.1:2230"
+  ],
+  "identities": {
+    "Foo": {
+      "description": "Foo",
+      "account": "eSVYuJ4p5ihsUDwXSTbSuwQL2QHrhmrvoqe7ytNcTbRKpfbGg1",
+      "data": "8358fa721235bfbe8ef2473aea77f3b1bd68b2f2f583e6d39e101c43cd6b4031619aef82311530f3463f53243c4bed1d43c2da88ed0b707b0ab490bd4643f24493a3e36983236079f3",
+      "salt": "05c9d1452e9761e0b62637c2869bd81ff23c8c964ce351f30d688c63ea41ad9d"
+    },
+    "regression test user": {
+      "description": "test",
+      "account": "feC5TpUhUAUo7TjTV5Rww13tDMCmcP8BdrGpX2U183ba3yxxG1",
+      "data": "c1ec2bdf366dad0960344afa1a5fa59daa504387d7d31fdd4a8baaa8b04a8e3ad78df95518c6da3442118b6a9aa18d7f85c5840a8d0d0a642d0c41b57dc224237a32043f8f895a7a33",
+      "salt": "a286fa9cfb7db74a73d92f68d45b804695ede894c14d164b8d27de6c53729467"
+    }
+  }
+}
