@@ -36,8 +36,7 @@ module Cli
     end
 
     def identities
-      resp = JSON.parse(`#{cli_base_cmd} bitmarkd`)
-      resp["identities"].map { |i| i["name"] }
+      `#{cli_base_cmd} list`
     end
 
     def setup_issue_args(name:, meta:, quantity:, identity: default_identity)
