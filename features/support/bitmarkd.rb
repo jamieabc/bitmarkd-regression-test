@@ -40,10 +40,6 @@ class Bitmarkd
     http
   end
 
-  def empty_record?
-    status["block"]["local"] == 1 && status["block"]["remote"] == 1
-  end
-
   def status
     return "" if stopped?
 
