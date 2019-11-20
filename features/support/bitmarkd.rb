@@ -9,11 +9,11 @@ require_relative "helper"
 
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
-    :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :rpc_port, :status_uri,
-    :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network
+              :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :rpc_port, :status_uri,
+              :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network
 
   attr_accessor :prev_cmd, :response, :issued, :tx_id, :pay_tx_id, :fingerprint,
-    :provenance, :payments, :share_amount, :share_id, :share_info
+                :provenance, :payments, :share_amount, :share_id, :share_info
 
   include Cli
 

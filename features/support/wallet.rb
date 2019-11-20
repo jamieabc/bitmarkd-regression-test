@@ -4,7 +4,7 @@ class Wallet
   def initialize
     @conf = "#{ENV["HOME"]}/.config/wallet/wallet.conf"
     @password = "12345678"
-    @min_btc_balance = 1e9      #10 btc
+    @min_btc_balance = 1e9 #10 btc
     btc_balance
   end
 

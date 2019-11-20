@@ -17,7 +17,7 @@ module Cli
     def reset_cli
       reset_var_list.each { |var| var = nil }
       # initialize payment keys, it will be used to check if crypto payment is supported
-      @payments = { BTC: "", LTC: "" }
+      @payments = {BTC: "", LTC: ""}
     end
 
     def reset_var_list
@@ -142,8 +142,8 @@ module Cli
 
     def transfer(receiver:, counter_sign:)
       args = (counter_sign == true) ?
-        counter_sign_tx_args(id: tx_id, receiver: receiver) :
-        unratified_tx_args(id: tx_id, receiver: receiver)
+               counter_sign_tx_args(id: tx_id, receiver: receiver) :
+               unratified_tx_args(id: tx_id, receiver: receiver)
       cmd = transfer_cmd(args)
       self.response = JSON.parse(`#{cmd}`)
       puts "transfer cli result: #{response}"
