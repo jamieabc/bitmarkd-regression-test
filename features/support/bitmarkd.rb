@@ -18,20 +18,12 @@ class Bitmarkd
   include Cli
 
   def initialize(bm_num:, port:)
-    @bm_num = bm_num
-    @name = "bitmarkd#{@bm_num}"
-    @port = port
-    @rpc_port = "2#{bm_num}31"
-    @ip = is_os_freebsd ? "172.16.23.113" : "127.0.0.1"
-    @status_uri = "/bitmarkd/details"
-    @rpc_uri = "/bitmarkd/rpc"
-    @data_dir = "data"
-    @data_backup_dir = "data-backup"
-    @home_path = ENV["HOME"]
-    @go_path = ENV["GOPATH"]
-    @go_bin_path = "#{go_path}/bin"
+    init_bitmarkd(bm_num)
+    init_network(bm_num)
+    init_env
     init_cli
   end
+
 
   def create_http
     http = Net::HTTP.new(ip, rpc_port)
@@ -366,5 +358,28 @@ class Bitmarkd
       bm.start
       sleep self.sleep_interval
     end
+  end
+
+  private
+
+  def init_bitmarkd(bm_num)
+    @bm_num = bm_num
+    @name = "bitmarkd#{@bm_num}"
+    @status_uri = "/bitmarkd/details"
+    @rpc_uri = "/bitmarkd/rpc"
+    @data_dir = "data"
+    @data_backup_dir = "data-backup"
+  end
+
+  def init_env
+    @home_path = ENV["HOME"]
+    @go_path = ENV["GOPATH"]
+    @go_bin_path = "#{go_path}/bin"
+  end
+
+  def init_network(bm_num)
+    @rpc_port = "2#{bm_num}31"
+    @ip = is_os_freebsd ? "172.16.23.113" : "127.0.0.1"
+    @port = port
   end
 end
