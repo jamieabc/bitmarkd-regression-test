@@ -55,8 +55,8 @@ Then(/^I failed with cli error message "(.*)"$/) do |err_msg|
 end
 
 Then(/^I need to pay for second issue$/) do
-  expect(@bm3.response.has_key?("payments")).to be_truthy
-  expect(@bm3.response.has_key?("commands")).to be_truthy
+  expect(@bm3.response.key?("payments")).to be_truthy
+  expect(@bm3.response.key?("commands")).to be_truthy
 end
 
 def do_new_issue
