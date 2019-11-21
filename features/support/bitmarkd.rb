@@ -131,7 +131,8 @@ class Bitmarkd
       mode = status["mode"]
       break if exp_mode.casecmp?(mode)
     end
-    puts "#{name} cli result: #{resp}"
+    puts "#{name} cli result:"
+    ap resp
     unless exp_mode.casecmp?(mode)
       raise "#{name} waits #{slept_time} seconds, " \
             "mode #{mode} differs from expected #{exp_mode}"
@@ -144,12 +145,11 @@ class Bitmarkd
     cmd = "#{enter_dir_cmd}; #{start_bg_cmd}"
     retry_cnt = 3
 
-    while retry_cnt > 0
-      if stopped?
-        `#{cmd}`
-      end
+    while retry_cnt.positive?
+      `#{cmd}` if stopped?
 
       return if wait_status("normal")
+
       retry_cnt -= 1
     end
     raise "#{name} cannot start..." if stopped?
