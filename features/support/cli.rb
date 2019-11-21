@@ -53,10 +53,10 @@ module Cli
         setup_issue_args(name: name, meta: {"owner" => "me"}, quantity: 1)
         puts "new issue"
         issue(again: false)
-        if @response.empty?
-          raise "issue failed with no response"
-        end
-        puts "response: #{@response}"
+        raise "issue failed with no response" if @response.empty?
+
+        puts "response:"
+        ap @response
 
         @tx_id = @response["issueIds"].first
         puts "tx id: #{@tx_id}"
@@ -87,7 +87,8 @@ module Cli
         self.response = resp
       else
         self.response = JSON.parse(resp)
-        puts "cli issue with response: #{response}"
+        puts "cli issue with response:"
+        ap response
       end
     end
 
@@ -101,7 +102,7 @@ module Cli
     end
 
     def asset_args
-      return "-a \"#{asset_name}\"" if asset_name
+      "-a \"#{asset_name}\"" if asset_name
     end
 
     def gen_fingerprint
@@ -167,7 +168,8 @@ module Cli
       # TODO: this function is ambiguous, it gueses the identity and id
       cmd = balance_cmd(share, identity)
       resp = JSON.parse(`#{cmd}`)
-      puts "cli balance response: #{resp}"
+      puts "cli balance response:"
+      ap resp
       self.share_info = resp["balances"]
       item = share_info.first
       [item["shareId"], item["confirmed"]]
@@ -291,7 +293,8 @@ module Cli
     def grant(receiver:, quantity:)
       cmd = grant_cmd(receiver: receiver, quantity: quantity)
       resp = `#{cmd}`
-      puts "cli response: #{resp}"
+      puts "cli response:"
+      ap resp
       @response = JSON.parse(resp)
       extract_grant_response
       tx_info
