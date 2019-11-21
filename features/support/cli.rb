@@ -78,7 +78,8 @@ module Cli
         self.prev_cmd = cmd
       end
 
-      puts "issue command: #{cmd}"
+      puts "issue command:"
+      ap cmd
       resp = `#{cmd}`
       # extract a method to parse response
       if resp.downcase.include?("error")
@@ -146,7 +147,8 @@ module Cli
                unratified_tx_args(id: tx_id, receiver: receiver)
       cmd = transfer_cmd(args)
       self.response = JSON.parse(`#{cmd}`)
-      puts "transfer cli result: #{response}"
+      puts "transfer cli result:"
+      ap response
       extract_transfer_response(counter_sign)
     end
 
@@ -176,7 +178,8 @@ module Cli
     def balance_cmd(share, id)
       @identity = id
       cmd = "#{cli_base_cmd} balance -s #{share} -c 1 -o '#{id}'"
-      puts "balance command: #{cmd}"
+      puts "balance command:"
+      ap cmd
       cmd
     end
 
@@ -191,7 +194,8 @@ module Cli
         pay_info["amount"]
       )
       json = JSON.parse(resp)
-      puts "pay result: #{json}"
+      puts "pay result:"
+      ap json
       crypto_tx_id = json["txId"]
       puts "#{crypto.upcase} payment transaction ID: #{crypto_tx_id}"
     end
@@ -227,16 +231,19 @@ module Cli
     # refactor it
     def counter_sign(receiver)
       cmd = counter_sign_cmd(receiver)
-      puts "counter sign command: #{cmd}"
+      puts "counter sign command:"
+      ap cmd
       self.response = JSON.parse(`#{cmd}`)
-      puts "counter sign cli result: #{response}"
+      puts "counter sign cli result:"
+      ap response
       extract_transfer_response(false)
     end
 
     def counter_sign_grant(receiver)
       @identity = receiver
       cmd = counter_sign_cmd(receiver)
-      puts "counter sign grant command: #{cmd}"
+      puts "counter sign grant command:"
+      ap cmd
       resp = `#{cmd}`
       if resp.include?("error")
         puts "response with error: #{resp}"
@@ -244,7 +251,8 @@ module Cli
       end
 
       self.response = JSON.parse(resp)
-      puts "counter sign grant cli result: #{response}"
+      puts "counter sign grant cli result:"
+      ap response
       extract_counter_sign_grant_response
     end
 
@@ -255,7 +263,8 @@ module Cli
 
     def transfer_cmd(args)
       cmd = "#{cli_base_cmd} transfer #{args} 2>&1"
-      puts "transfer command: #{cmd}\n"
+      puts "transfer command:"
+      ap cmd
       cmd
     end
 
@@ -273,7 +282,8 @@ module Cli
 
     def share
       self.response = JSON.parse(`#{share_cmd}`)
-      puts "share cli result: #{response}"
+      puts "share cli result:"
+      ap response
       extract_share_response
       tx_info
     end
@@ -360,7 +370,8 @@ module Cli
 
     def share_cmd
       cmd = "#{cli_base_cmd} share -t #{tx_id} -q #{share_amount}"
-      puts "share command: #{cmd}"
+      puts "share command:"
+      ap cmd
       cmd
     end
 

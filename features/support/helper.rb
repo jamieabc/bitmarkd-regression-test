@@ -1,3 +1,5 @@
+require "awesome_print"
+
 def is_os_freebsd
   os == "FreeBSD"
 end
