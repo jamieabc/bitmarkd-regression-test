@@ -21,7 +21,8 @@ class Wallet
 
     cmd = "#{base_cmd} #{crypto.downcase} --testnet sendmany --hex-data " \
     "'#{pay_id}' '#{pay_addr},#{amount}'"
-    puts "pay command: #{cmd}"
+    puts "pay command:"
+    ap cmd
     `#{cmd}`
   end
 

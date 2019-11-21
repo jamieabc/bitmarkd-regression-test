@@ -17,7 +17,7 @@ module Cli
     def reset_cli
       reset_var_list.each { |var| var = nil }
       # initialize payment keys, it will be used to check if crypto payment is supported
-      @payments = {BTC: "", LTC: ""}
+      @payments = { BTC: "", LTC: "" }
     end
 
     def reset_var_list
@@ -50,7 +50,7 @@ module Cli
       i = 0
       while true
         name = "#{Faker::Name.name}-#{Faker::PhoneNumber.phone_number}"
-        setup_issue_args(name: name, meta: {"owner" => "me"}, quantity: 1)
+        setup_issue_args(name: name, meta: { "owner" => "me" }, quantity: 1)
         puts "new issue"
         issue(again: false)
         raise "issue failed with no response" if @response.empty?
@@ -188,6 +188,7 @@ module Cli
     def pay(wallet:, crypto:)
       c = crypto.upcase
       raise "#{crypto} not support" if payments.keys.include?(c)
+
       pay_info = response["payments"][c].first
       resp = wallet.pay(
         crypto,

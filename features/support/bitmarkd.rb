@@ -128,6 +128,7 @@ class Bitmarkd
       slept_time += sleep_int
       resp = status
       next if resp.empty?
+
       mode = status["mode"]
       break if exp_mode.casecmp?(mode)
     end
@@ -257,15 +258,16 @@ class Bitmarkd
     }.to_json
     resp = http.post(rpc_uri, body, "Content-Type" => "application/json")
     raise "RCP asset get response error: #{resp.body}" unless resp.kind_of?(Net::HTTPSuccess)
+
     self.issued = JSON.parse(resp.body)
   end
 
   def same_blockchain?(benchmark)
     benchmark_db = benchmark.dump_db_tx
-    raise "Error empty result of bitamarkd #{benchmark} dump" if benchmark_db.empty?
+    raise "Error empty result of bitmarkd #{benchmark} dump" if benchmark_db.empty?
 
     new_db = dump_db_tx
-    raise "Error empty result of bitamarkd #{new} dump" if new_db.empty?
+    raise "Error empty result of bitmarkd #{new} dump" if new_db.empty?
 
     same_db?(benchmark_db, new_db)
   end
