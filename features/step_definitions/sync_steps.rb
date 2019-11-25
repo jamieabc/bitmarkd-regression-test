@@ -1,7 +1,7 @@
 Given(/^clean start one bitmarkd$/) do
   @bm4.stop
   @bm4.clear_data
-  @bm4.clear_cache
+  @bm4.clear_reservoir_cache
   @bm4.start
 end
 
@@ -23,7 +23,8 @@ Given(/^specific bitmarkd has longer chain than rest of others$/) do
   [@bm1, @bm2, @bm4].each do |bm|
     bm.stop
     bm.truncate_to_block(truncate_to_blk)
-    bm.clear_cache
+    bm.clear_reservoir_cache
+    bm.clear_peer_cache
   end
 end
 

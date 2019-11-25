@@ -36,12 +36,12 @@ When(/^I grant "(.*)" with "(\d+)" shares$/) do |friend, amount|
 end
 
 Then(/^"(.*)" has "(\d+)" shares of asset$/) do |friend, amount|
-  id, balance = @bm3.balance(@bm3.share_id, friend)
+  _, balance = @bm3.balance(@bm3.share_id, friend)
   expect(balance).to eq(amount)
 end
 
 Then(/^I have "(\d+)" shares of asset$/) do |amount|
-  id, balance = @bm3.balance
+  _, balance = @bm3.balance
   expect(balance).to eq(amount)
 end
 
@@ -54,7 +54,7 @@ end
 # Swap shares
 Given(/^I have "(\d+)" shares of asset "(.*)" - (.*)$/) do |amount, name, asset_alias|
   meta = {
-    "owner" => @bm3.default_identity,
+    "owner" => @bm3.default_identity
   }
   @bm3.setup_issue_args(name: name, meta: meta, quantity: amount)
   instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, @bm3.default_identity)
@@ -90,8 +90,8 @@ Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, 
   @bm4.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
 end
 
-When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, first_asset, friend, second_amount, second_asset|
-  sleep 2 * Bitmarkd.sleep_interval # incase transaction is not broadcast
+When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, friend, second_amount, _|
+  sleep Bitmarkd.status_check_itrv # in case transaction is not broadcast
   @bm3.grant(receiver: friend, quantity: first_amount)
   @bm3.counter_sign_grant(friend)
   @bm3.pay(wallet: @wallet, crypto: "BTC")
@@ -105,7 +105,7 @@ When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares 
   @bm4.wait_tx_status(id: @bm4.tx_id, exp_status: "confirmed")
 end
 
-Then(/^I have "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |first_amount, first_asset, second_amount, second_asset|
+Then(/^I have "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, second_amount, _|
   id, balance_a = @bm3.balance
   id, balance_b = @bm4.balance
 
@@ -113,7 +113,7 @@ Then(/^I have "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) 
   expect(balance_b).to eq(second_amount)
 end
 
-Then(/^"(.*)" has "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |friend, first_amount, first_asset, second_amount, second_asset|
+Then(/^"(.*)" has "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |friend, first_amount, _, second_amount, _|
   id, balance_a = @bm3.balance(@bm3.share_id, "Foo")
   id, balance_b = @bm4.balance(@bm4.share_id, "Foo")
 

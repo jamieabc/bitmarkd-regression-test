@@ -3,6 +3,7 @@ require "socket"
 require "rspec"
 require "pry"
 require "net/http"
+require 'fileutils'
 require_relative "cli"
 require_relative "bitcoin"
 require_relative "helper"
@@ -10,14 +11,15 @@ require_relative "helper"
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
               :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :rpc_port, :status_uri,
-              :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network
+              :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network,
+              :reservoir_cache_file, :peer_cache_file, :path, :bm_exec_path, :dumpdb_exec_path
 
   attr_accessor :prev_cmd, :response, :issued, :tx_id, :pay_tx_id, :fingerprint,
                 :provenance, :payments, :share_amount, :share_id, :share_info
 
   include Cli
 
-  def initialize(bm_num:, port:)
+  def initialize(bm_num:)
     init_bitmarkd(bm_num)
     init_network(bm_num)
     init_env
@@ -57,7 +59,7 @@ class Bitmarkd
   end
 
   def bm_base_cmd
-    "#{bm_exec} --config-file='#{name}.conf'"
+    "#{bm_exec_path} --config-file='#{name}.conf'"
   end
 
   def truncate_to_block(blk_num)
@@ -78,7 +80,7 @@ class Bitmarkd
     terminate(false)
     return if stopped?
 
-    sleep self.class.stop_interval
+    sleep self.class.status_check_itrv
     terminate(true)
   end
 
@@ -109,23 +111,23 @@ class Bitmarkd
 
   def wait_status(exp_mode)
     slept_time = 0
-    sleep_int = self.class.sleep_interval
-    sleep_limit = self.class.start_interval
+    sleep_itrv = self.class.status_check_itrv
+    max_sleep_time = self.class.start_interval
     resp = nil
 
     # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
     return if bm_num == 1
 
     if bm_num == 2
-      sleep sleep_limit
+      sleep max_sleep_time
       return
     end
 
-    while slept_time < sleep_limit
+    while slept_time < max_sleep_time
       return false if stopped?
 
-      sleep sleep_int
-      slept_time += sleep_int
+      sleep sleep_itrv
+      slept_time += sleep_itrv
       resp = status
       next if resp.empty?
 
@@ -160,42 +162,45 @@ class Bitmarkd
     "\"#{str}\""
   end
 
+  def remove_file(file_path)
+    File.delete(file_path) if File.exist?(file_path)
+  end
+
+  def remove_dir(dir_path)
+    FileUtils.rm_r(dir_path) if File.directory?(dir_path)
+  end
+
   def clear_data
     raise "#{name} not stopped" unless stopped?
 
     puts "delete #{name} data directory..."
-    `[ -d #{path}/data ] && rm -r #{path}/data`
+    remove_dir("#{path}/data")
   end
 
-  def clear_cache
+  def clear_reservoir_cache
     raise "#{name} not stopped" unless stopped?
 
     puts "delete #{name} cache file..."
-    `[ -f #{path}/reservoir-local.cache ] && rm #{path}/reservoir-local.cache`
+    remove_file("#{path}/#{reservoir_cache_file}")
   end
 
-  def path
-    "#{@home_path}/.config/#{name}"
-  end
+  def clear_peer_cache
+    raise "#{name} not stopped" unless stopped?
 
-  def bm_exec
-    "#{@go_bin_path}/bitmarkd"
-  end
-
-  def dumpdb_exec
-    "#{@go_bin_path}/bitmark-dumpdb"
+    puts "delete #{name} peer file..."
+    remove_file("#{path}/#{peer_cache_file}")
   end
 
   def dump_db_cmd
     file_path = "#{path}/data/local"
-    "#{dumpdb_exec} --file=#{file_path}"
+    "#{dumpdb_exec_path} --file=#{file_path}"
   end
 
   def dump_db_tx
     stop
 
     # wait 5 seconds for bitmarkd to stop
-    sleep self.class.stop_interval
+    sleep self.class.status_check_itrv
 
     cmd = double_quote_str("#{dump_db_cmd} T")
 
@@ -307,7 +312,7 @@ class Bitmarkd
         break if resp_status.casecmp?(exp_status) || tx_limit_exceed
       end
 
-      sleep self.class.sleep_interval
+      sleep self.class.status_check_itrv
     end
     finish = Time.now
     if tx_limit_exceed
@@ -320,7 +325,7 @@ class Bitmarkd
   end
 
   def tx_limit_exceed?(iteration)
-    iteration * self.class.sleep_interval >= self.class.tx_limit_time
+    iteration * self.class.status_check_itrv >= self.class.tx_limit_time
   end
 
   def provenance_owner(idx:)
@@ -339,26 +344,22 @@ class Bitmarkd
 
   # below are class methods
 
-  def self.sleep_interval
-    5
+  def self.status_check_itrv
+    10
   end
 
   def self.start_interval
     300
   end
 
-  def self.stop_interval
-    5
-  end
-
-  def self.genesis_blk
+  def self.genesis_blk_num
     1
   end
 
   def self.start_all(*bms)
     bms.each do |bm|
       bm.start
-      sleep self.sleep_interval
+      sleep self.status_check_itrv
     end
   end
 
@@ -371,12 +372,17 @@ class Bitmarkd
     @rpc_uri = "/bitmarkd/rpc"
     @data_dir = "data"
     @data_backup_dir = "data-backup"
+    @reservoir_cache_file = 'reservoir-local.cache'
+    @peer_cache_file = 'peers-local.json'
   end
 
   def init_env
     @home_path = ENV["HOME"]
     @go_path = ENV["GOPATH"]
     @go_bin_path = "#{go_path}/bin"
+    @path = "#{home_path}/.config/#{name}"
+    @bm_exec_path = "#{go_bin_path}/bitmarkd"
+    @dumpdb_exec_path = "#{@go_bin_path}/bitmark-dumpdb"
   end
 
   def init_network(bm_num)
