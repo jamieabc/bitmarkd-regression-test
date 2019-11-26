@@ -3,7 +3,7 @@ require "faker"
 module Cli
   def self.included(base)
     base.send :include, InstanceMethods
-    base.extend ClassMethods
+    # base.extend ClassMethods
   end
 
   module InstanceMethods
@@ -381,12 +381,6 @@ module Cli
 
     def grant_cmd(id = share_id, before_blk = 0, receiver:, quantity:)
       "#{cli_base_cmd} grant -r '#{receiver}' -s #{id} -q #{quantity} -b #{before_blk}"
-    end
-  end
-
-  module ClassMethods
-    def tx_limit_time
-      60 * 10
     end
   end
 end

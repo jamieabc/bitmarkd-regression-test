@@ -15,7 +15,8 @@ require_all('variables')
 
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bitmarkd_index, :port, :ip,
-              :name, :asset_name, :asset_quantity, :asset_meta, :identity, :network
+              :name, :asset_name, :asset_quantity, :asset_meta, :identity, :network,
+              :rpc
 
   attr_accessor :prev_cmd, :response, :issued, :tx_id, :pay_tx_id, :fingerprint,
                 :provenance, :payments, :share_amount, :share_id, :share_info
@@ -38,23 +39,15 @@ class Bitmarkd
   end
 
   def status
-    return "" if stopped?
+    return '' if stopped?
 
-    http = create_http
-    begin
-      resp = http.get(Variables::Uri.status)
-    rescue
-      puts "#{name} http not ready"
-      return ""
-    end
-
-    unless resp.kind_of?(Net::HTTPSuccess)
-      puts "status error response: #{resp.body}"
-      return ""
+    resp = rpc.status
+    if resp == '' || !resp.is_a?(Net::HTTPSuccess)
+      puts "status error response: #{resp}"
+      return ''
     end
 
     self.response = JSON.parse(resp.body)
-    response
   end
 
   def normal?
@@ -83,7 +76,7 @@ class Bitmarkd
     terminate(false)
     return if stopped?
 
-    sleep Variables::Timing.check_status_interval
+    sleep Variables::Timing.check_interval
     terminate(true)
   end
 
@@ -114,7 +107,7 @@ class Bitmarkd
 
   def wait_status(exp_mode)
     slept_time = 0
-    sleep_itrv = Variables::Timing.check_status_interval
+    sleep_itrv = Variables::Timing.check_interval
     max_sleep_time = Variables::Timing.start_interval
     resp = nil
 
@@ -203,7 +196,7 @@ class Bitmarkd
     stop
 
     # wait 5 seconds for bitmarkd to stop
-    sleep Variables::Timing.check_status_interval
+    sleep Variables::Timing.check_interval
 
     cmd = double_quote_str("#{dump_db_cmd} T")
 
@@ -251,21 +244,14 @@ class Bitmarkd
     ssl
   end
 
-  def issued_data
-    http = create_http
-    body = {
-      "id" => 1,
-      "method" => "Assets.Get",
-      "params" => [
-        {
-          "fingerprints" => [
-            "#{fingerprint}",
-          ],
-        },
-      ],
+  def asset_info
+    request_body = {
+      id: 1,
+      method: "Assets.Get",
+      params: [{ fingerprints: [fingerprint.to_s] }]
     }.to_json
-    resp = http.post(Variables::Uri.rpc, body, "Content-Type" => "application/json")
-    raise "RCP asset get response error: #{resp.body}" unless resp.kind_of?(Net::HTTPSuccess)
+    resp = rpc.asset_info(request_body)
+    raise "RCP asset get response error: #{resp.body}" unless resp.is_a?(Net::HTTPSuccess)
 
     self.issued = JSON.parse(resp.body)
   end
@@ -297,7 +283,7 @@ class Bitmarkd
 
     raise "issue #{id} status not #{exp_status}" unless result.casecmp?(exp_status)
 
-    issued_data
+    asset_info
   end
 
   def check_tx_status(id:, exp_status:)
@@ -315,7 +301,7 @@ class Bitmarkd
         break if resp_status.casecmp?(exp_status) || tx_limit_exceed
       end
 
-      sleep Variables::Timing.check_status_interval
+      sleep Variables::Timing.check_interval
     end
     finish = Time.now
     if tx_limit_exceed
@@ -328,7 +314,7 @@ class Bitmarkd
   end
 
   def tx_limit_exceed?(iteration)
-    iteration * Variables::Timing.check_status_interval >= self.class.tx_limit_time
+    iteration * Variables::Timing.check_interval >= Variables::Timing.tx_limit
   end
 
   def provenance_owner(idx:)
@@ -350,7 +336,7 @@ class Bitmarkd
   def self.start_all(*bms)
     bms.each do |bm|
       bm.start
-      sleep Variables::Timing.check_status_interval
+      sleep Variables::Timing.check_interval
     end
   end
 
@@ -364,5 +350,6 @@ class Bitmarkd
   def init_network(bitmarkd_index)
     @port = Network::Port.new(bitmarkd_index)
     @ip = Network::IP.new(os).ip
+    @rpc = Network::RPC.new(ip: ip, port: port.rpc)
   end
 end

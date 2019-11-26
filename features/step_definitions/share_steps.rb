@@ -91,7 +91,7 @@ Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, 
 end
 
 When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, friend, second_amount, _|
-  sleep Variables::Timing.check_status_interval # in case transaction is not broadcast
+  sleep Variables::Timing.check_interval # in case transaction is not broadcast
   @bm3.grant(receiver: friend, quantity: first_amount)
   @bm3.counter_sign_grant(friend)
   @bm3.pay(wallet: @wallet, crypto: "BTC")

@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-# environment variables
 module Variables
+  # environment variables
   module Env
     def home
       ENV["HOME"]

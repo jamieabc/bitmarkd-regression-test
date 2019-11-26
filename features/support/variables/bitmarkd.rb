@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 module Variables
+  # bitmarkd variables
   module Bitmarkd
     def data_dir
       "data"
