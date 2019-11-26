@@ -31,13 +31,6 @@ class Bitmarkd
     init_cli
   end
 
-  def create_http
-    http = Net::HTTP.new(ip, port.rpc)
-    http.use_ssl = true
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    http
-  end
-
   def status
     return '' if stopped?
 
