@@ -51,11 +51,11 @@ class Bitmarkd
     "#{bitmarkd_bin_path} --config-file='#{name}.conf'"
   end
 
-  def truncate_to_block(blk_num)
-    puts "truncate #{name} block number to #{blk_num}"
+  def truncate_to_block(number)
+    puts "truncate #{name} block number to #{number}"
 
     cd_cmd = enter_dir_cmd
-    del_cmd = "#{bm_base_cmd} delete-down #{blk_num + 1}"
+    del_cmd = "#{bm_base_cmd} delete-down #{number + 1}"
     `#{cd_cmd}; #{del_cmd}`
   end
 
