@@ -9,26 +9,26 @@ require "awesome_print"
 require_relative "helper"
 require_relative "cli"
 require_relative "bitcoin"
+require_relative 'variables/env'
 require_all('network')
+require_all('variables')
 
 class Bitmarkd
-  attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
-              :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :status_uri,
-              :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network,
-              :reservoir_cache_file, :peer_cache_file, :path, :bm_exec_path, :dumpdb_exec_path
+  attr_reader :cli_conf, :password, :default_identity, :bitmarkd_index, :port, :ip,
+              :name, :asset_name, :asset_quantity, :asset_meta, :identity, :network
 
   attr_accessor :prev_cmd, :response, :issued, :tx_id, :pay_tx_id, :fingerprint,
                 :provenance, :payments, :share_amount, :share_id, :share_info
 
   include Cli
+  include Variables::Env
+  include Variables::Bitmarkd
 
   def initialize(bitmarkd_index:)
     init_bitmarkd(bitmarkd_index)
     init_network(bitmarkd_index)
-    init_env
     init_cli
   end
-
 
   def create_http
     http = Net::HTTP.new(ip, port.rpc)
@@ -42,7 +42,7 @@ class Bitmarkd
 
     http = create_http
     begin
-      resp = http.get(status_uri)
+      resp = http.get(Variables::Uri.status)
     rescue
       puts "#{name} http not ready"
       return ""
@@ -62,7 +62,7 @@ class Bitmarkd
   end
 
   def bm_base_cmd
-    "#{bm_exec_path} --config-file='#{name}.conf'"
+    "#{bitmarkd_bin_path} --config-file='#{name}.conf'"
   end
 
   def truncate_to_block(blk_num)
@@ -83,7 +83,7 @@ class Bitmarkd
     terminate(false)
     return if stopped?
 
-    sleep self.class.status_check_itrv
+    sleep Variables::Timing.check_status_interval
     terminate(true)
   end
 
@@ -101,7 +101,7 @@ class Bitmarkd
   end
 
   def enter_dir_cmd
-    "cd #{path}"
+    "cd #{data_path}"
   end
 
   def start_cmd
@@ -114,14 +114,14 @@ class Bitmarkd
 
   def wait_status(exp_mode)
     slept_time = 0
-    sleep_itrv = self.class.status_check_itrv
-    max_sleep_time = self.class.start_interval
+    sleep_itrv = Variables::Timing.check_status_interval
+    max_sleep_time = Variables::Timing.start_interval
     resp = nil
 
     # for bitmarkd2, wait longer time for both bitmarkd 1 & 2 to start
-    return if bm_num == 1
+    return if bitmarkd_index == 1
 
-    if bm_num == 2
+    if bitmarkd_index == 2
       sleep max_sleep_time
       return
     end
@@ -177,33 +177,33 @@ class Bitmarkd
     raise "#{name} not stopped" unless stopped?
 
     puts "delete #{name} data directory..."
-    remove_dir("#{path}/data")
+    remove_dir("#{data_path}/data")
   end
 
   def clear_reservoir_cache
     raise "#{name} not stopped" unless stopped?
 
     puts "delete #{name} cache file..."
-    remove_file("#{path}/#{reservoir_cache_file}")
+    remove_file("#{data_path}/#{reservoir_cache_file}")
   end
 
   def clear_peer_cache
     raise "#{name} not stopped" unless stopped?
 
     puts "delete #{name} peer file..."
-    remove_file("#{path}/#{peer_cache_file}")
+    remove_file("#{data_path}/#{peer_cache_file}")
   end
 
   def dump_db_cmd
-    file_path = "#{path}/data/local"
-    "#{dumpdb_exec_path} --file=#{file_path}"
+    file_path = "#{data_path}/data/local"
+    "#{dumpdb_bin_path} --file=#{file_path}"
   end
 
   def dump_db_tx
     stop
 
     # wait 5 seconds for bitmarkd to stop
-    sleep self.class.status_check_itrv
+    sleep Variables::Timing.check_status_interval
 
     cmd = double_quote_str("#{dump_db_cmd} T")
 
@@ -218,7 +218,7 @@ class Bitmarkd
   end
 
   def backup_exist?
-    result = `ls #{path}/#{data_backup_dir}`
+    result = `ls #{data_path}/#{data_backup_dir}`
     return false if result.include?("No such file or directory")
 
     true
@@ -264,7 +264,7 @@ class Bitmarkd
         },
       ],
     }.to_json
-    resp = http.post(rpc_uri, body, "Content-Type" => "application/json")
+    resp = http.post(Variables::Uri.rpc, body, "Content-Type" => "application/json")
     raise "RCP asset get response error: #{resp.body}" unless resp.kind_of?(Net::HTTPSuccess)
 
     self.issued = JSON.parse(resp.body)
@@ -315,7 +315,7 @@ class Bitmarkd
         break if resp_status.casecmp?(exp_status) || tx_limit_exceed
       end
 
-      sleep self.class.status_check_itrv
+      sleep Variables::Timing.check_status_interval
     end
     finish = Time.now
     if tx_limit_exceed
@@ -328,7 +328,7 @@ class Bitmarkd
   end
 
   def tx_limit_exceed?(iteration)
-    iteration * self.class.status_check_itrv >= self.class.tx_limit_time
+    iteration * Variables::Timing.check_status_interval >= self.class.tx_limit_time
   end
 
   def provenance_owner(idx:)
@@ -347,45 +347,18 @@ class Bitmarkd
 
   # below are class methods
 
-  def self.status_check_itrv
-    10
-  end
-
-  def self.start_interval
-    300
-  end
-
-  def self.genesis_blk_num
-    1
-  end
-
   def self.start_all(*bms)
     bms.each do |bm|
       bm.start
-      sleep self.status_check_itrv
+      sleep Variables::Timing.check_status_interval
     end
   end
 
   private
 
-  def init_bitmarkd(bm_num)
-    @bm_num = bm_num
-    @name = "bitmarkd#{@bm_num}"
-    @status_uri = "/bitmarkd/details"
-    @rpc_uri = "/bitmarkd/rpc"
-    @data_dir = "data"
-    @data_backup_dir = "data-backup"
-    @reservoir_cache_file = 'reservoir-local.cache'
-    @peer_cache_file = 'peers-local.json'
-  end
-
-  def init_env
-    @home_path = ENV["HOME"]
-    @go_path = ENV["GOPATH"]
-    @go_bin_path = "#{go_path}/bin"
-    @path = "#{home_path}/.config/#{name}"
-    @bm_exec_path = "#{go_bin_path}/bitmarkd"
-    @dumpdb_exec_path = "#{@go_bin_path}/bitmark-dumpdb"
+  def init_bitmarkd(bitmarkd_index)
+    @bitmarkd_index = bitmarkd_index
+    @name = "bitmarkd#{bitmarkd_index}"
   end
 
   def init_network(bitmarkd_index)
