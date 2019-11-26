@@ -81,9 +81,10 @@ module Cli
       puts "issue command:"
       ap cmd
       resp = `#{cmd}`
+
       # extract a method to parse response
       if resp.downcase.include?("error")
-        puts "Issue failed with message #{resp}"
+        puts "issue failed with message #{resp}"
         self.response = resp
       else
         self.response = JSON.parse(resp)
@@ -143,9 +144,7 @@ module Cli
     end
 
     def transfer(receiver:, counter_sign:)
-      args = (counter_sign == true) ?
-               counter_sign_tx_args(id: tx_id, receiver: receiver) :
-               unratified_tx_args(id: tx_id, receiver: receiver)
+      args = counter_sign ? counter_sign_tx_args(id: tx_id, receiver: receiver) : unratified_tx_args(id: tx_id, receiver: receiver)
       cmd = transfer_cmd(args)
       self.response = JSON.parse(`#{cmd}`)
       puts "transfer cli result:"
@@ -165,7 +164,7 @@ module Cli
     #   ]
     # }
     def balance(share = share_id, identity = default_identity)
-      # TODO: this function is ambiguous, it gueses the identity and id
+      # TODO: this function is ambiguous, it guesses the identity and id
       cmd = balance_cmd(share, identity)
       resp = JSON.parse(`#{cmd}`)
       puts "cli balance response:"
@@ -338,9 +337,9 @@ module Cli
     def extract_share_response
       # key denotes for instance method used, value denotes for key from cli response
       hsh = {
-        "share_id=" => "shareId",
-        "tx_id=" => "txId",
-        "pay_tx_id=" => "payId",
+        "share_id=": "shareId",
+        "tx_id=": "txId",
+        "pay_tx_id=": "payId",
       }
       extract_values_from_response(hsh)
       parse_payments
@@ -355,7 +354,7 @@ module Cli
       # key denotes for instance method used, value denotes for key from cli response
       # in other words, cli response result of "grant" will be saved into "tx_id"
       hsh = {
-        "tx_id=" => "grant",
+        "tx_id=": "grant"
       }
       extract_values_from_response(hsh)
     end
@@ -364,12 +363,13 @@ module Cli
     def extract_values_from_response(hsh)
       hsh.each do |key, value|
         raise "response without key #{value}" unless response.key?(value)
-        self.send(key, response[value]) if response[value]
+
+        send(key, response[value]) if response[value]
       end
     end
 
     def parse_payments
-      payments.keys.each { |key| self.payments[key] = response["commands"][key.to_s] }
+      payments.keys.each { |key| payments[key] = response["commands"][key.to_s] }
     end
 
     def share_cmd
