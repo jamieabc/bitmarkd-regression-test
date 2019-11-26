@@ -139,7 +139,7 @@ module Cli
     end
 
     def url
-      "#{ip}:#{port}"
+      "#{ip}:#{port.node}"
     end
 
     def transfer(receiver:, counter_sign:)

@@ -4,13 +4,16 @@ require "rspec"
 require "pry"
 require "net/http"
 require 'fileutils'
+require "awesome_print"
+
+require_relative "helper"
 require_relative "cli"
 require_relative "bitcoin"
-require_relative "helper"
+require_all('network')
 
 class Bitmarkd
   attr_reader :cli_conf, :password, :default_identity, :bm_num, :port, :ip, :data_dir,
-              :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :rpc_port, :status_uri,
+              :data_backup_dir, :home_path, :go_path, :go_bin_path, :name, :status_uri,
               :rpc_uri, :asset_name, :asset_quantity, :asset_meta, :identity, :network,
               :reservoir_cache_file, :peer_cache_file, :path, :bm_exec_path, :dumpdb_exec_path
 
@@ -19,16 +22,16 @@ class Bitmarkd
 
   include Cli
 
-  def initialize(bm_num:)
-    init_bitmarkd(bm_num)
-    init_network(bm_num)
+  def initialize(bitmarkd_index:)
+    init_bitmarkd(bitmarkd_index)
+    init_network(bitmarkd_index)
     init_env
     init_cli
   end
 
 
   def create_http
-    http = Net::HTTP.new(ip, rpc_port)
+    http = Net::HTTP.new(ip, port.rpc)
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
     http
@@ -241,7 +244,7 @@ class Bitmarkd
   end
 
   def open_ssl_socket
-    socket = TCPSocket.new(ip, port)
+    socket = TCPSocket.new(ip, port.node)
     ssl = OpenSSL::SSL::SSLSocket.new(socket)
     ssl.sync_close = true
     ssl.connect
@@ -385,9 +388,8 @@ class Bitmarkd
     @dumpdb_exec_path = "#{@go_bin_path}/bitmark-dumpdb"
   end
 
-  def init_network(bm_num)
-    @rpc_port = "2#{bm_num}31"
-    @ip = is_os_freebsd ? "172.16.23.113" : "127.0.0.1"
-    @port = port
+  def init_network(bitmarkd_index)
+    @port = Network::Port.new(bitmarkd_index)
+    @ip = Network::IP.new(os).ip
   end
 end

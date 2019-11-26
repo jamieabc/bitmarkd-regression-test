@@ -1,9 +1,9 @@
 Given(/^I have bitmark-cli config file$/) do
-  @bm1 = Bitmarkd.new(bm_num: 1)
-  @bm2 = Bitmarkd.new(bm_num: 2)
-  @bm3 = Bitmarkd.new(bm_num: 3)
-  @bm4 = Bitmarkd.new(bm_num: 4)
-  @bm5 = Bitmarkd.new(bm_num: 5)
+  @bm1 = Bitmarkd.new(bitmarkd_index: 1)
+  @bm2 = Bitmarkd.new(bitmarkd_index: 2)
+  @bm3 = Bitmarkd.new(bitmarkd_index: 3)
+  @bm4 = Bitmarkd.new(bitmarkd_index: 4)
+  @bm5 = Bitmarkd.new(bitmarkd_index: 5)
   @wallet = Wallet.new
   @btc = BTC.new(Wallet.btc_addr)
 end
