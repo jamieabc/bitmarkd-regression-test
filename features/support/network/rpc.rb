@@ -10,7 +10,7 @@ module Network
       @port = port
     end
 
-    def create_http
+    def create_https
       http = Net::HTTP.new(ip, port)
       http.use_ssl = true
       http.verify_mode = OpenSSL::SSL::VERIFY_NONE
@@ -18,7 +18,7 @@ module Network
     end
 
     def status
-      http = create_http
+      http = create_https
       begin
         resp = http.get(Variables::Uri.status)
       rescue IOError
@@ -29,7 +29,7 @@ module Network
     end
 
     def asset_info(data)
-      http = create_http
+      http = create_https
       http.post(Variables::Uri.rpc, data, "Content-Type" => "application/json")
     end
   end
