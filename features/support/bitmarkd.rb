@@ -342,7 +342,7 @@ class Bitmarkd
 
   def init_network(bitmarkd_index)
     @port = Network::Port.new(bitmarkd_index)
-    @ip = Network::IP.new(os).ip
+    @ip = Network::IP.new.ip
     @rpc = Network::RPC.new(ip: ip, port: port.rpc)
   end
 end
