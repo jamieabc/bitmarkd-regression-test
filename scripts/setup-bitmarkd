@@ -7,22 +7,21 @@ SUCCESS_CODE=0
 # stop existing running bitmarkd
 while pgrep bitmarkd > /dev/null
 do
-    printf "stopping bitmarkd..."
+    printf "stopping bitmarkd...\n"
     pkill -9 bitmarkd
 
     # wait 5 seconds to check
-    printf "checking..."
+    printf "checking...\n"
     sleep 5
 done
-printf "all bitmarkd are stopped"
+printf "all bitmarkd are stopped\n"
 
 # compile bitmarkd
-package="github.com/bitmark-inc/bitmarkd"
-package_dir="${GOPATH}/src/${package}"
+GOPATH=${HOME}/gocode
+package_dir="${HOME}/bitmarkd"
 bin_dir="${GOPATH}/bin"
 
 # remove existing bitmarkd
-[ -d "${package_dir}" ] && go clean "${package}"
 [ -d "${package_dir}" ] && rm -rf "${package_dir}"
 # remove executable files if any exist
 [ -f "${GOPATH}/bin/bitmarkd" ] && rm "${GOPATH}/bin/bitmarkd"
@@ -31,13 +30,13 @@ bin_dir="${GOPATH}/bin"
 [ -f "${GOPATH}/bin/bitmark-dumpdb" ] && rm "${GOPATH}/bin/bitmark-dumpdb"
 
 # download latest bitmarkd
-printf "downloading bitmarkd..."
-go get -u -v "${package}" || true # avoid error message or no Go files in ...
+printf "downloading bitmarkd...\n"
+git clone https://github.com/bitmark-inc/bitmarkd.git "${package_dir}"
 cd "${package_dir}"
-go get -u -v ./...
+GOPATH="${GOPATH}" GO111MODULE=on go get -u -v ./...
 cd ~
 
-printf "entering directory %s" "${package_dir}"
+printf "entering directory %s" "${package_dir}\n"
 cd "${package_dir}"
 
 # setup third party libraries
@@ -45,15 +44,15 @@ printf "\nsetup third party libraries\n"
 # git submodule update --init
 
 # compile
-printf "compiling..."
-go build -v ./...
-go install -v ./...
+printf "compiling...\n"
+GOPATH="${GOPATH}" GO111MODULE=on go build -v ./...
+GOPATH="${GOPATH}" GO111MODULE=on go install -v ./...
 
 if [ ! -f "${bin_dir}/bitmarkd" ]; then
-    printf "bitmarkd build fail..."
+    printf "bitmarkd build fail...\n"
     exit $ERROR_CODE
 else
-    printf "bitmarkd build success"
+    printf "bitmarkd build success\n"
 fi
 
 # create config directory if not exist
@@ -63,12 +62,12 @@ if [ ! -d "${config_dir}" ]; then
 fi
 
 # generate bitmarkd config
-printf "generating bitmarkd environment..."
+printf "generating bitmarkd environment...\n"
 array=("1" "2" "3" "4" "5")
 for number in "${array[@]}"
 do
     # make sure every time a clean start, backup data directory
-    printf "\nBacking up bitmarkd ${number} data directory, remove log/peer data..."
+    printf "\nBacking up bitmarkd ${number} data directory, remove log/peer data...\n"
     dir="${config_dir}/bitmarkd${number}"
     if [ -d "${dir}/data" ]; then
         # remove backup directory if exist
