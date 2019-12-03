@@ -63,7 +63,7 @@ fi
 
 # generate bitmarkd config
 printf "generating bitmarkd environment...\n"
-array=("1" "2" "3" "4" "5")
+array=("1" "2" "3" "4" "5" "6" "7" "8")
 for number in "${array[@]}"
 do
     # make sure every time a clean start, backup data directory
