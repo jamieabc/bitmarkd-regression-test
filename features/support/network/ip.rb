@@ -3,14 +3,9 @@
 module Network
   # ip
   class IP
-    attr_reader :mac
-
-    def initialize(os)
-      @mac = os == 'Darwin'
-    end
 
     def ip
-      @mac ? local : server
+      run_ci? ? server : local
     end
 
     private
@@ -20,7 +15,7 @@ module Network
     end
 
     def server
-      '172.16.23.113'
+      '172.24.150.110'
     end
   end
 end
