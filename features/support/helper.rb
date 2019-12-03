@@ -8,3 +8,11 @@ end
 def os
   `uname`.gsub(/\n/, "")
 end
+
+def ci_os
+  "FreeBSD"
+end
+
+def run_ci?
+  os == ci_os
+end
