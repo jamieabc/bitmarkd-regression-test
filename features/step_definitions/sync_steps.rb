@@ -3,10 +3,12 @@ Given(/^clean start one bitmarkd$/) do
   @bm4.clear_data
   @bm4.clear_reservoir_cache
   @bm4.start
+  @bm4.check_mode("normal")
 end
 
 When(/^newly started bitmarkd works in normal mode$/) do
   @bm4.start
+  @bm4.check_mode("normal")
 end
 
 Then(/^newly started bitmarkd should have same data as others$/) do
@@ -49,6 +51,7 @@ When(/^specific bitmarkd works in "normal" mode$/) do
   # bitmarkd takes some time to start
   puts "wait at most #{Variables::Timing.start_interval} seconds for #{@bm4.name} to start"
   @bm4.start
+  @bm4.check_mode("normal")
   expect(@bm4.normal?).to be_truthy
 end
 

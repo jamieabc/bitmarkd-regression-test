@@ -32,12 +32,13 @@ class Bitmarkd
   end
 
   def status
-    return '' if stopped?
+    err_return = { "mode" => "not started" }
+    return err_return if stopped?
 
     resp = rpc.status
     if resp == '' || !resp.is_a?(Net::HTTPSuccess)
       puts "status error response: #{resp}"
-      return ''
+      return err_return
     end
 
     self.response = JSON.parse(resp.body)
@@ -132,18 +133,29 @@ class Bitmarkd
     true
   end
 
+  def status?(mode)
+    return false if stopped?
+
+    mode.downcase == status["mode"].downcase
+  end
+
+  def check_mode(mode)
+    raise "#{name} not started..." if stopped?
+
+    slept_time = 0
+    while slept_time <= Variables::Timing.start_interval
+      return if status?(mode)
+
+      sleep Variables::Timing.check_interval
+      slept_time += Variables::Timing.check_interval
+    end
+    raise "#{name} cannot into #{mode} mode"
+  end
+
   def start
     puts "starting #{name}..."
-    cmd = "#{enter_dir_cmd}; #{start_bg_cmd}"
-    retry_cnt = 3
+    `#{enter_dir_cmd}; #{start_bg_cmd}` if stopped?
 
-    while retry_cnt.positive?
-      `#{cmd}` if stopped?
-
-      return if wait_status("normal")
-
-      retry_cnt -= 1
-    end
     raise "#{name} cannot start..." if stopped?
   end
 
@@ -195,6 +207,7 @@ class Bitmarkd
 
     result = `#{cmd} 2>&1`
     start
+    check_mode("normal")
     result
   end
 
@@ -241,7 +254,7 @@ class Bitmarkd
     request_body = {
       id: 1,
       method: "Assets.Get",
-      params: [{ fingerprints: [fingerprint.to_s] }]
+      params: [{fingerprints: [fingerprint.to_s]}]
     }.to_json
     resp = rpc.asset_info(request_body)
     raise "RCP asset get response error: #{resp.body}" unless resp.is_a?(Net::HTTPSuccess)
@@ -330,6 +343,10 @@ class Bitmarkd
     bms.each do |bm|
       bm.start
       sleep Variables::Timing.check_interval
+    end
+
+    bms.each do |bm|
+      bm.check_mode("normal")
     end
   end
 
