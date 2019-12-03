@@ -78,15 +78,15 @@ run_bitmarkd() {
         # wait for bitmarkd to initialize tcp, only for node number 3, 4
         if [ "$number" = "3" ] || [ "$number" = "4" ]; then
             sleep 200
+            continue
         fi
 
         if [ "$number" = "2" ]; then
             sleep 320
+            continue
         fi
 
-        if [ "$number" = "5" ]; then
-            sleep 30
-        fi
+        sleep 30
     done
 }
 
