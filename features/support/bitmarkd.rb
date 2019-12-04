@@ -296,10 +296,7 @@ class Bitmarkd
   # below are class methods
 
   def self.start_all(*bms)
-    bms.each do |bm|
-      bm.start
-      sleep Variables::Timing.check_interval
-    end
+    bms.each(&:start)
   end
 
   def self.normal(*bms)
