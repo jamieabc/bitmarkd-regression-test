@@ -72,6 +72,8 @@ class Bitmarkd
 
     sleep Variables::Timing.check_interval
     terminate(true)
+
+    raise "cannot stop #{name}" unless stopped?
   end
 
   def terminate(force)
