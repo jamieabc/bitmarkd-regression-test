@@ -159,6 +159,7 @@ class Bitmarkd
     return unless stopped?
 
     `#{enter_dir_cmd}; #{start_bg_cmd}`
+    sleep Variables::Timing.check_interval
     raise "cannot start #{name}" if stopped?
   end
 
