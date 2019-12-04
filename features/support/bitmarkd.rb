@@ -155,8 +155,6 @@ class Bitmarkd
   def start
     puts "starting #{name}..."
     `#{enter_dir_cmd}; #{start_bg_cmd}` if stopped?
-
-    raise "#{name} cannot start..." if stopped?
   end
 
   def double_quote_str(str)
