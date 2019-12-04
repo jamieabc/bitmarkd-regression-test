@@ -20,8 +20,8 @@ end
 
 Given(/^some bitmarkds has longer chain than rest of others$/) do
   # bitmarkd3 is longer than others
-  truncate_to_blk = @bm3.block_height / 2
-  puts "#{@bm3.name} current block height #{@bm3.block_height}" \
+  truncate_to_blk = @bm3.height / 2
+  puts "#{@bm3.name} current block height #{@bm3.height}" \
        ", truncate others to #{truncate_to_blk}"
 
   [@bm1, @bm2, @bm4].each do |bm|

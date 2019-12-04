@@ -200,7 +200,7 @@ class Bitmarkd
     str[truncate_length..(-1 * truncate_length - 1)]
   end
 
-  def block_height
+  def height
     status["block"]["count"]["local"].to_i
   end
 
