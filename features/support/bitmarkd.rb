@@ -195,25 +195,6 @@ class Bitmarkd
     remove_file("#{data_path}/#{peer_cache_file}")
   end
 
-  def dump_db_cmd
-    file_path = "#{data_path}/data/local"
-    "#{dumpdb_bin_path} --file=#{file_path}"
-  end
-
-  def dump_db_tx
-    stop
-
-    # wait 5 seconds for bitmarkd to stop
-    sleep Variables::Timing.check_interval
-
-    cmd = double_quote_str("#{dump_db_cmd} T")
-
-    result = `#{cmd} 2>&1`
-    start
-    check_mode("normal")
-    result
-  end
-
   def remove_unwanted_data(str)
     truncate_length = str.index("\n") + 1
     str[truncate_length..(-1 * truncate_length - 1)]
@@ -257,7 +238,7 @@ class Bitmarkd
     request_body = {
       id: 1,
       method: "Assets.Get",
-      params: [{fingerprints: [fingerprint.to_s]}]
+      params: [{ fingerprints: [fingerprint.to_s] }]
     }.to_json
     resp = rpc.asset_info(request_body)
     raise "RCP asset get response error: #{resp.body}" unless resp.is_a?(Net::HTTPSuccess)
@@ -266,23 +247,16 @@ class Bitmarkd
   end
 
   def same_blockchain?(benchmark)
-    benchmark_db = benchmark.dump_db_tx
-    raise "Error empty result of bitmarkd #{benchmark} dump" if benchmark_db.empty?
+    own_status = status
+    other_status = benchmark.status
 
-    new_db = dump_db_tx
-    raise "Error empty result of bitmarkd #{new} dump" if new_db.empty?
+    return true if own_status["hash"] == other_status["hash"]
 
-    same_db?(benchmark_db, new_db)
+    false
   end
 
-  def same_db?(data1, data2)
-    db1 = remove_unwanted_data(data1)
-    db2 = remove_unwanted_data(data2)
-    db1 == db2
-  end
-
-  # todo: consider change this method into wait_tx_confirmed, cause currently no other
-  # satatus will be waited. In this way, exp_status can be removed, and id can be made
+  # TODO: consider change this method into wait_tx_confirmed, cause currently no other
+  # status will be waited. In this way, exp_status can be removed, and id can be made
   # default to instance method "id"
   def wait_tx_status(id:, exp_status:)
     # mine some blocks, make sure transfer is confirmed

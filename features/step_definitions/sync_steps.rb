@@ -8,13 +8,13 @@ Given(/^clean start one bitmarkd$/) do
 end
 
 When(/^newly started bitmarkd works in normal mode$/) do
-  @bm4.start
+  @bm2.start
   sleep Variables::Timing.check_interval
-  @bm4.check_mode("normal")
+  @bm2.check_mode("normal")
 end
 
 Then(/^newly started bitmarkd should have same data as others$/) do
-  same = @bm4.same_blockchain?(@bm5)
+  same = @bm2.same_blockchain?(@bm3)
   expect(same).to be_truthy
 end
 
