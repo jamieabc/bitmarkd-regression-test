@@ -103,7 +103,7 @@ check_bitmarkd() {
     # check connection, at leat 3 servers should be connected
     for number in "${bitmarkd_cluster_numbers[@]}"
     do
-        normal_mode=$(curl -s -k "https://localhost:2${number}31/bitmarkd/details" | jq | grep -c Normal)
+        normal_mode=$(curl -s -k "https://localhost:22${number}31/bitmarkd/details" | jq | grep -c Normal)
         if [ "$normal_mode" != "$SUCCESS_CODE" ]; then
             printf "\nnode %s in Normal mode, cli port %s, https port %s\n" "${number}" "2${number}30" "2${number}31"
 	        bitmarkd_connected=true
