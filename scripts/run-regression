@@ -9,107 +9,103 @@ bitmarkd_cluster_numbers=("1" "2" "3" "4" "5" "6" "7" "8")
 bitmarkd_connected=false
 
 measure_time() {
-    s=$(date +%s)
-    "$@"
-    # rc=$?
-    printf "finish execution '%s' for %s seconds\n" "$@" $(($(date +%s) - s))
+  s=$(date +%s)
+  "$@"
+  # rc=$?
+  printf "finish execution '%s' for %s seconds\n" "$@" $(($(date +%s) - s))
 }
 
 check_script_result() {
-    if [ $# -ne 1 ]; then
-        printf "error argument, expect 1 but get %s" "$#"
-        return $ERROR_CODE
-    fi
+  if [ $# -ne 1 ]; then
+    printf "error argument, expect 1 but get %s" "$#"
+    return $ERROR_CODE
+  fi
 
-    if [ $? -ne $SUCCESS_CODE ]; then
-        printf "execute %s fail, abort...\n" "$1"
-        clean_up
-        exit $ERROR_CODE
-    fi
+  if [ $? -ne $SUCCESS_CODE ]; then
+    printf "execute %s fail, abort...\n" "$1"
+    clean_up
+    exit $ERROR_CODE
+  fi
 }
 
 clean_up_programs=(
-    "bitmarkd"
-    "recorderd"
-    "bitcoind"
-    "litecoind"
+  "bitmarkd"
+  "recorderd"
+  "bitcoind"
+  "litecoind"
 )
 
 clean_up() {
-    for program in "${clean_up_programs[@]}"
-    do
-        pkill -f "${program}"
-    done
+  for program in "${clean_up_programs[@]}"; do
+    pkill -f "${program}"
+  done
 }
 
 trap "clean_up" SIGINT SIGTERM
 
 # run crypto programs
 run_crypto() {
-    ~/bin/run-crypto
-    check_script_result "run-crypto"
+  ~/bin/run-crypto
+  check_script_result "run-crypto"
 }
 
 check_crypto() {
-    processes=("bitcoind" "litecoind")
-    for process in "${processes[@]}"
-    do
-        if ! pgrep "$process" &> /dev/null; then
-            printf "\n%s is not started, abort...\n" "$process"
-            clean_up
-            exit $ERROR_CODE
-        fi
-    done
+  processes=("bitcoind" "litecoind")
+  for process in "${processes[@]}"; do
+    if ! pgrep "$process" &>/dev/null; then
+      printf "\n%s is not started, abort...\n" "$process"
+      clean_up
+      exit $ERROR_CODE
+    fi
+  done
 }
 
 # setup bitmarkd if bitmarkd config not exist
-setup_bitmarkd () {
-    ~/bin/setup-bitmarkd
-    check_script_result "setup-bitmarkd"
+setup_bitmarkd() {
+  ~/bin/setup-bitmarkd
+  check_script_result "setup-bitmarkd"
 }
 
 run_bitmarkd() {
-    for number in "${bitmarkd_cluster_numbers[@]}"
-    do
-        printf "\nStart bitmarkd %s" "${number}"
-        cd "${HOME}/.config/bitmarkd${number}" || true
-        nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
+  for number in "${bitmarkd_cluster_numbers[@]}"; do
+    printf "\nStart bitmarkd %s" "${number}"
+    cd "${HOME}/.config/bitmarkd${number}" || true
+    nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
 
-        # wait for bitmarkd to initialize tcp, only for node number 3, 4
-        if [ "$number" = "3" ] || [ "$number" = "4" ]; then
-            sleep 200
-            continue
-        fi
+    # wait for bitmarkd to initialize tcp, only for node number 3, 4
+    if [ "$number" = "3" ] || [ "$number" = "4" ]; then
+      sleep 200
+      continue
+    fi
 
-        if [ "$number" = "2" ]; then
-            sleep 320
-            continue
-        fi
+    if [ "$number" = "2" ]; then
+      sleep 320
+      continue
+    fi
 
-        sleep 30
-    done
+    sleep 30
+  done
 }
 
 setup_recorderd() {
-    ~/bin/setup-recorderd
+  ~/bin/setup-recorderd
 }
 
 run_recorderd() {
-    printf "\nRun recorderd...\n"
-    ~/bin/run-recorderd
+  printf "\nRun recorderd...\n"
+  ~/bin/run-recorderd
 }
 
 check_bitmarkd() {
-    # check connection, at leat 3 servers should be connected
-    for number in "${bitmarkd_cluster_numbers[@]}"
-    do
-        normal_mode=$(curl -s -k "https://localhost:22${number}31/bitmarkd/details" | jq | grep -c Normal)
-        if [ "$normal_mode" != "$SUCCESS_CODE" ]; then
-            printf "\nnode %s in Normal mode, cli port %s, https port %s\n" "${number}" "2${number}30" "2${number}31"
-	        bitmarkd_connected=true
-            break 1                 # break 1 levels of loop
-        fi
-    done
+  # check connection, at leat 5 servers should be connected
+  for number in "${bitmarkd_cluster_numbers[@]}"; do
+    normal_mode=$(curl -s -k "https://localhost:22${number}31/bitmarkd/details" | jq | grep -c Normal)
+    if [ "$normal_mode" != "$SUCCESS_CODE" ]; then
+      printf "\nnode %s in Normal mode, cli port %s, https port %s\n" "${number}" "22${number}30" "22${number}31"
+      bitmarkd_connected=true
+      break 1 # break 1 levels of loop
+    fi
+  done
 }
 
 run_crypto
@@ -127,8 +123,8 @@ check_script_result "run-recorderd"
 check_bitmarkd
 
 if [ "$bitmarkd_connected" = "false" ]; then
-    printf "bitmarkd cannot connected\n"
-    exit $ERROR_CODE
+  printf "bitmarkd cannot connected\n"
+  exit $ERROR_CODE
 fi
 
 exit $SUCCESS_CODE
