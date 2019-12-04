@@ -1,5 +1,5 @@
 shared_dir="jenkins"
-regression_env_script="bin/run-regression"
+regression_script="bin/run-regression"
 regression_dir="bitmarkd-regression-test"
 result_file="${shared_dir}/result.json"
 repo="https://github.com/jamieabc/bitmarkd-regression-test.git"
@@ -24,7 +24,7 @@ if [ -f ~/${result_file} ]; then
 fi
 
 echo run regression environment setup
-eval ~/$regression_env_script
+eval ~/$regression_script
 
 # check if regression script executed successfully
 if [ $? -ne 0 ]; then
@@ -37,7 +37,7 @@ echo remove existing regression directory
 rm -rf ~/${regression_dir}
 
 echo cloning newest regression test cases
-git clone "${repo}"
+git clone --depth 1 "${repo}"
 
 # run test cases
 cd ~/${regression_dir}
@@ -52,7 +52,7 @@ fi
 kill_programs
 
 if [ ! -f ~/${result_file} ]; then
-    printf "${result_file} not exist, abort..."
+    printf "%s not exist, abort...\n" "${result_file}"
     exit $ERROR_CODE
 else
     cat ~/${result_file}
