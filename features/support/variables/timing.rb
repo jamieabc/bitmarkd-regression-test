@@ -8,7 +8,7 @@ module Variables
     end
 
     def self.check_interval
-      10
+      30
     end
 
     def self.tx_limit
