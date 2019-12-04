@@ -1,10 +1,10 @@
 Given(/^clean start one bitmarkd$/) do
-  @bm4.stop
-  @bm4.clear_data
-  @bm4.clear_reservoir_cache
-  @bm4.start
+  @bm2.stop
+  @bm2.clear_data
+  @bm2.clear_reservoir_cache
+  @bm2.start
   sleep Variables::Timing.check_interval
-  @bm4.check_mode("normal")
+  @bm2.check_mode("normal")
 end
 
 When(/^newly started bitmarkd works in normal mode$/) do
