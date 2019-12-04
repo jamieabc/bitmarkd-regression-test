@@ -154,7 +154,9 @@ class Bitmarkd
 
   def start
     puts "starting #{name}..."
-    `#{enter_dir_cmd}; #{start_bg_cmd}` if stopped?
+    return unless stopped?
+
+    `#{enter_dir_cmd}; #{start_bg_cmd}`
     raise "cannot start #{name}" if stopped?
   end
 
