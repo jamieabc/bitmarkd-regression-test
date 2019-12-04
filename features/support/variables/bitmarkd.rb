@@ -7,10 +7,6 @@ module Variables
       "data"
     end
 
-    def data_backup_dir
-      "data-backup"
-    end
-
     def reservoir_cache_file
       'reservoir-local.cache'
     end

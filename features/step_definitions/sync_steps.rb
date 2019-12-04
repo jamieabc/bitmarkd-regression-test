@@ -14,7 +14,7 @@ When(/^newly started bitmarkd works in normal mode$/) do
 end
 
 Then(/^newly started bitmarkd should have same data as others$/) do
-  same = @bm2.same_blockchain?(@bm3)
+  same = @bm2.same_blockchain?(@bm1)
   expect(same).to be_truthy
 end
 
@@ -42,12 +42,6 @@ end
 Then(/^other bitmarkd with same chain data as specific bitmarkd$/) do
   same = @bm4.same_blockchain?(@bm3)
   expect(same).to be_truthy
-end
-
-Given(/^specific bitmarkd with same chain length but different data than others$/) do
-  @bm4.stop
-  @bm4.restore_backup
-  @bm4.truncate_to_block(@bm3.block_height)
 end
 
 When(/^specific bitmarkd works in "normal" mode$/) do

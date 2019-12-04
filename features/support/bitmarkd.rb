@@ -200,30 +200,8 @@ class Bitmarkd
     str[truncate_length..(-1 * truncate_length - 1)]
   end
 
-  def backup_exist?
-    result = `ls #{data_path}/#{data_backup_dir}`
-    return false if result.include?("No such file or directory")
-
-    true
-  end
-
   def block_height
-    status["block"]["local"].to_i
-  end
-
-  def restore_backup
-    return unless backup_exist?
-
-    cd_cmd = enter_dir_cmd
-    rm_cmd = "rm -rf #{data_dir}"
-    change_cmd = "cp -r #{data_backup_dir} #{data_dir}"
-
-    cmd = cd_cmd + "; " + rm_cmd + "; " + change_cmd
-
-    puts "cmd: #{cmd}"
-
-    puts "restore #{name}, #{data_backup_dir} to #{data_dir}"
-    `#{cmd}`
+    status["block"]["count"]["local"].to_i
   end
 
   def open_ssl_socket
