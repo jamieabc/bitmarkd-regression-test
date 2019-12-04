@@ -42,7 +42,7 @@ git clone --depth 1 "${repo}"
 # run test cases
 cd ~/${regression_dir}
 echo running cucumber...
-cucumber --fail-fast -g --format json -o ~/${result_file}
+XDG_CONFIG_HOME=~/.config cucumber --fail-fast -g --format json -o ~/${result_file}
 
 # check cucumber status
 if [ $? -ne 0 ]; then

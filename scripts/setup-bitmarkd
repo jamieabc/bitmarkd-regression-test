@@ -5,14 +5,13 @@ ERROR_CODE=1
 SUCCESS_CODE=0
 
 # stop existing running bitmarkd
-while pgrep bitmarkd > /dev/null
-do
-    printf "stopping bitmarkd...\n"
-    pkill -9 bitmarkd
+while pgrep bitmarkd >/dev/null; do
+  printf "stopping bitmarkd...\n"
+  pkill -9 bitmarkd
 
-    # wait 5 seconds to check
-    printf "checking...\n"
-    sleep 5
+  # wait 5 seconds to check
+  printf "checking...\n"
+  sleep 5
 done
 printf "all bitmarkd are stopped\n"
 
@@ -49,44 +48,43 @@ GOPATH="${GOPATH}" GO111MODULE=on go build -v ./...
 GOPATH="${GOPATH}" GO111MODULE=on go install -v ./...
 
 if [ ! -f "${bin_dir}/bitmarkd" ]; then
-    printf "bitmarkd build fail...\n"
-    exit $ERROR_CODE
+  printf "bitmarkd build fail...\n"
+  exit $ERROR_CODE
 else
-    printf "bitmarkd build success\n"
+  printf "bitmarkd build success\n"
 fi
 
 # create config directory if not exist
 config_dir="${HOME}/.config"
 if [ ! -d "${config_dir}" ]; then
-    mkdir -p "${config_dir}"
+  mkdir -p "${config_dir}"
 fi
 
 # generate bitmarkd config
-printf "generating bitmarkd environment...\n"
+printf "setup bitmarkd environment...\n"
 array=("1" "2" "3" "4" "5" "6" "7" "8")
-for number in "${array[@]}"
-do
-    # make sure every time a clean start, backup data directory
-    printf "\nBacking up bitmarkd ${number} data directory, remove log/peer data...\n"
-    dir="${config_dir}/bitmarkd${number}"
-    if [ -d "${dir}/data" ]; then
-        # remove backup directory if exist
-        [ -d "${dir}/data-backup" ] && rm -r "${dir}/data-backup"
+for number in "${array[@]}"; do
+  # make sure every time a clean start, backup data directory
+  printf "\nBacking up bitmarkd%s data directory, remove log/peer data...\n" "$number"
+  dir="${config_dir}/bitmarkd${number}"
+  if [ -d "${dir}/data" ]; then
+    # remove backup directory if exist
+    [ -d "${dir}/data-backup" ] && rm -r "${dir}/data-backup"
 
-        #mv "${dir}/data" "${dir}/data-backup"
-	rm -rf "${dir}/data"
-	cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data"
-	#cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data-backup"
-    fi
+    #mv "${dir}/data" "${dir}/data-backup"
+    rm -rf "${dir}/data"
+    cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data"
+    #cp -r "${HOME}/bitmarkd-data-backup" "${dir}/data-backup"
+  fi
 
-    # remove existing log files
-    # [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
-    [ -d "${dir}/log" ] && rm -f "${dir}/log/*"
+  # remove existing log files
+  # [ -d "${dir}/log" ] && find "${dir}/log" -name "bitmarkd.log\.[0-9]*" -delete
+  [ -d "${dir}/log" ] && rm -f "${dir}/log/*"
 
-    # remove peer data
-    [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
+  # remove peer data
+  [ -f "${dir}/peers-local.json" ] && rm "${dir}/peers-local.json"
 
-    # remove cache data
-    [ -e "${dir}/reservoir-local.cache" ] && rm "${dir}/reservoir-local.cache"
+  # remove cache data
+  [ -e "${dir}/reservoir-local.cache" ] && rm "${dir}/reservoir-local.cache"
 done
 exit $SUCCESS_CODE
