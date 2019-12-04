@@ -13,6 +13,6 @@ Feature: Sync data from network
 
   @sync_last_scenario
   Scenario: Longer chain dominates network
-    Given specific bitmarkd has longer chain than rest of others
+    Given some bitmarkds has longer chain than rest of others
     When other bitmarkd connects to specific bitmarkd and works in normal mode
     Then other bitmarkd with same chain data as specific bitmarkd

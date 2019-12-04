@@ -18,7 +18,7 @@ Then(/^newly started bitmarkd should have same data as others$/) do
   expect(same).to be_truthy
 end
 
-Given(/^specific bitmarkd has longer chain than rest of others$/) do
+Given(/^some bitmarkds has longer chain than rest of others$/) do
   # bitmarkd3 is longer than others
   truncate_to_blk = @bm3.block_height / 2
   puts "#{@bm3.name} current block height #{@bm3.block_height}" \
