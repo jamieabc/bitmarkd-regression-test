@@ -34,6 +34,7 @@ Given(/^other bitmarkd connects to specific bitmarkd and works in normal mode$/)
   # although bitmarkd3 is not stopped, re-connected bitmarkd 1 and 2 might cause
   # it into resynchronise mode
   Bitmarkd.start_all(@bm1, @bm2, @bm3, @bm4)
+  Bitmarkd.normal(@bm1, @bm2, @bm3)
 end
 
 Then(/^other bitmarkd with same chain data as specific bitmarkd$/) do

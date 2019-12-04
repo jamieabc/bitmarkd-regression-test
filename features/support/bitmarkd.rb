@@ -344,7 +344,9 @@ class Bitmarkd
       bm.start
       sleep Variables::Timing.check_interval
     end
+  end
 
+  def self.normal(*bms)
     bms.each do |bm|
       bm.check_mode("normal")
     end

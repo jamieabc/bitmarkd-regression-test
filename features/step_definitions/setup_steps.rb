@@ -17,6 +17,7 @@ end
 
 Given(/^some bitmarkds already working normally$/) do
   Bitmarkd.start_all(@bm3, @bm4, @bm5, @bm6, @bm7, @bm8)
+  Bitmarkd.normal(@bm3)
 end
 
 Given(/^wallet has enough balance to pay$/) do
