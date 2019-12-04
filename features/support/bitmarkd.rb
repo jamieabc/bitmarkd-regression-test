@@ -32,7 +32,7 @@ class Bitmarkd
   end
 
   def status
-    err_return = { "mode" => "not started" }
+    err_return = {"mode" => "not started"}
     return err_return if stopped?
 
     resp = rpc.status
@@ -217,7 +217,7 @@ class Bitmarkd
     request_body = {
       id: 1,
       method: "Assets.Get",
-      params: [{ fingerprints: [fingerprint.to_s] }]
+      params: [{fingerprints: [fingerprint.to_s]}]
     }.to_json
     resp = rpc.asset_info(request_body)
     raise "RCP asset get response error: #{resp.body}" unless resp.is_a?(Net::HTTPSuccess)
@@ -249,30 +249,22 @@ class Bitmarkd
   end
 
   def check_tx_status(id:, exp_status:)
-    # for i in 0..query_retry_count
     start = Time.now
-    resp_status = nil
     iterate_count = 0
-    tx_limit_exceed = false
+    json = nil
+
     loop do
       json = JSON.parse(tx_status(id))
-      iterate_count += 1
-      if json && json["status"]
-        resp_status = json["status"]
-        tx_limit_exceed = tx_limit_exceed? iterate_count
-        break if resp_status.casecmp?(exp_status) || tx_limit_exceed
-      end
+      break if tx_limit_exceed? iterate_count
+
+      break if json && json['status'] && json['status'].casecmp?(exp_status)
 
       sleep Variables::Timing.check_interval
-    end
-    finish = Time.now
-    if tx_limit_exceed
-      puts "time limit exceed"
-    else
-      puts "takes #{finish - start} seconds"
+      iterate_count += 1
     end
 
-    resp_status
+    puts "takes #{Time.now - start} seconds for a transfer, limit: #{Variables::Timing.tx_limit} seconds"
+    json['status']
   end
 
   def tx_limit_exceed?(iteration)
