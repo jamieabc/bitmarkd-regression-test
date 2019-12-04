@@ -6,7 +6,6 @@ export PATH="${GOPATH}/bin":$PATH
 SUCCESS_CODE=0
 ERROR_CODE=1
 bitmarkd_cluster_numbers=("1" "2" "3" "4" "5" "6" "7" "8")
-bitmarkd_connected=false
 
 measure_time() {
   s=$(date +%s)
@@ -74,16 +73,16 @@ run_bitmarkd() {
 
     # wait for bitmarkd to initialize tcp, only for node number 3, 4
     if [ "$number" = "3" ] || [ "$number" = "4" ]; then
-      sleep 200
+      sleep 60
       continue
     fi
 
     if [ "$number" = "2" ]; then
-      sleep 320
+      sleep 300
       continue
     fi
 
-    sleep 30
+    sleep 60
   done
 }
 
@@ -94,18 +93,6 @@ setup_recorderd() {
 run_recorderd() {
   printf "\nRun recorderd...\n"
   ~/bin/run-recorderd
-}
-
-check_bitmarkd() {
-  # check connection, at leat 5 servers should be connected
-  for number in "${bitmarkd_cluster_numbers[@]}"; do
-    normal_mode=$(curl -s -k "https://localhost:22${number}31/bitmarkd/details" | jq | grep -c Normal)
-    if [ "$normal_mode" != "$SUCCESS_CODE" ]; then
-      printf "\nnode %s in Normal mode, cli port %s, https port %s\n" "${number}" "22${number}30" "22${number}31"
-      bitmarkd_connected=true
-      break 1 # break 1 levels of loop
-    fi
-  done
 }
 
 run_crypto
@@ -119,12 +106,5 @@ check_script_result "setup-recorderd"
 
 run_recorderd
 check_script_result "run-recorderd"
-
-check_bitmarkd
-
-if [ "$bitmarkd_connected" = "false" ]; then
-  printf "bitmarkd cannot connected\n"
-  exit $ERROR_CODE
-fi
 
 exit $SUCCESS_CODE
