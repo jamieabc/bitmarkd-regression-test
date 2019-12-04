@@ -64,7 +64,7 @@ class Bitmarkd
   # the lock behavior happens at listener.go, I plan to solve it in the
   # future, but as now, when it happens, use "kill -SIGKILL" to force terminate
   def stop
-    puts "stopping #{name}..."
+    puts "#{name} current status: #{status['mode']}, stopping..."
     return if stopped?
 
     terminate(false)
