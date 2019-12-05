@@ -263,10 +263,6 @@ class Bitmarkd
     json['status']
   end
 
-  def tx_limit_exceed?(iteration)
-    iteration * Variables::Timing.check_interval >= Variables::Timing.tx_limit
-  end
-
   def provenance_owner(idx:)
     # make sure provenance is long enough
     if provenance.length <= idx
