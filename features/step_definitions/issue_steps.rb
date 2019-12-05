@@ -73,9 +73,7 @@ end
 # TODO: fix the dependency
 def set_tx_id_from_response
   # raise error is empty or error message
-  if @bm3.response.empty?
-    raise "Issue failed without response"
-  end
+  raise "Issue failed without response" if @bm3.response.empty?
 
   @bm3.tx_id = @bm3.response["issueIds"].first
 end
