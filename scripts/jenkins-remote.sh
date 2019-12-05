@@ -2,7 +2,7 @@ shared_dir="jenkins"
 regression_script="bin/run-regression"
 regression_dir="bitmarkd-regression-test"
 result_file="${shared_dir}/result.json"
-repo="https://github.com/jamieabc/bitmarkd-regression-test.git"
+repo="https://git.bitmark.com:8080/system/bitmarkd-regression-test.git"
 
 ERROR_CODE=1
 
