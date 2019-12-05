@@ -124,7 +124,7 @@ class Bitmarkd
       next if resp.empty?
 
       mode = status["mode"]
-      break if exp_mode.casecmp?(mode)
+      break if exp_mode.downcase == mode.downcase
     end
     puts "#{name} cli result:"
     ap resp

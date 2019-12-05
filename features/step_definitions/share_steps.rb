@@ -59,6 +59,7 @@ Given(/^I have "(\d+)" shares of asset "(.*)" - (.*)$/) do |amount, name, asset_
   @bm3.setup_issue_args(name: name, meta: meta, quantity: amount)
   instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, @bm3.default_identity)
 
+  @bm3.wait_status('normal')
   @bm3.issue(again: false)
   @bm3.tx_id = @bm3.response["issueIds"].first
   BTC.mine
@@ -78,6 +79,7 @@ Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, 
   @owner_b = friend
   instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, friend)
   @bm4.setup_issue_args(name: name, meta: meta, quantity: amount, identity: @owner_b)
+  @bm4.wait_status('normal')
   @bm4.issue(again: false)
   @bm4.tx_id = @bm4.response["issueIds"].first
   BTC.mine
@@ -92,6 +94,7 @@ end
 
 When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, friend, second_amount, _|
   sleep Variables::Timing.check_interval # in case transaction is not broadcast
+  @bm3.wait_status('normal')
   @bm3.grant(receiver: friend, quantity: first_amount)
   @bm3.counter_sign_grant(friend)
   @bm3.pay(wallet: @wallet, crypto: "BTC")
