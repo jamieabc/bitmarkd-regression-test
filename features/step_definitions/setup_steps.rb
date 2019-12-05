@@ -7,6 +7,7 @@ Given(/^I have bitmark-cli config file$/) do
   @bm6 = Bitmarkd.new(bitmarkd_index: 6)
   @bm7 = Bitmarkd.new(bitmarkd_index: 7)
   @bm8 = Bitmarkd.new(bitmarkd_index: 8)
+  @bm9 = Bitmarkd.new(bitmarkd_index: 9)
   @wallet = Wallet.new
   @btc = BTC.new(Wallet.btc_addr)
 end
@@ -16,7 +17,7 @@ Given(/^I have a friend "(.*)" with bitmark account$/) do |friend|
 end
 
 Given(/^some bitmarkds already working normally$/) do
-  Bitmarkd.start_all(@bm3, @bm4, @bm5, @bm6, @bm7, @bm8)
+  Bitmarkd.start_all(@bm3, @bm4, @bm5, @bm6, @bm7, @bm8, @bm9)
   Bitmarkd.normal(@bm3)
 end
 
