@@ -14,5 +14,9 @@ module Variables
     def self.tx_limit
       60 * 10
     end
+
+    def self.tx_check_times
+      tx_limit / check_interval
+    end
   end
 end

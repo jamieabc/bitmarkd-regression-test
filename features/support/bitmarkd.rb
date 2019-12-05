@@ -250,20 +250,16 @@ class Bitmarkd
 
   def check_tx_status(id:, exp_status:)
     start = Time.now
-    iterate_count = 0
     json = nil
 
-    loop do
+    Variables::Timing.tx_check_times.times do
       json = JSON.parse(tx_status(id))
-      break if tx_limit_exceed? iterate_count
-
-      break if json && json['status'] && json['status'].casecmp?(exp_status)
+      break if json['status']&.casecmp?(exp_status)
 
       sleep Variables::Timing.check_interval
-      iterate_count += 1
     end
 
-    puts "takes #{Time.now - start} seconds for a transfer, limit: #{Variables::Timing.tx_limit} seconds"
+    puts "takes #{Time.now - start} seconds for transfer become #{exp_status}, time limit: #{Variables::Timing.tx_limit} seconds"
     json['status']
   end
 
