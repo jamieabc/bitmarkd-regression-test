@@ -71,7 +71,7 @@ run_bitmarkd() {
     cd "${HOME}/.config/bitmarkd${number}" || true
     nohup bitmarkd --config-file="bitmarkd${number}.conf" start >/dev/null 2>&1 &
   done
-  sleep 700
+  sleep 800
 }
 
 setup_recorderd() {
