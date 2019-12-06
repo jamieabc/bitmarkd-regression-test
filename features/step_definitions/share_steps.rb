@@ -74,22 +74,22 @@ end
 
 Given(/^"(.*)" has "(\d+)" shares of asset "(.*)" - (.*)$/) do |friend, amount, name, asset_alias|
   meta = {
-    "owner" => friend,
+    "owner" => friend
   }
   @owner_b = friend
   instance_variable_set("@owner_#{asset_alias.downcase}".to_sym, friend)
-  @bm4.setup_issue_args(name: name, meta: meta, quantity: amount, identity: @owner_b)
-  @bm4.wait_status('normal')
-  @bm4.issue(again: false)
-  @bm4.tx_id = @bm4.response["issueIds"].first
+  @bm1.setup_issue_args(name: name, meta: meta, quantity: amount, identity: @owner_b)
+  @bm1.wait_status('normal')
+  @bm1.issue(again: false)
+  @bm1.tx_id = @bm1.response["issueIds"].first
   BTC.mine
-  @bm4.wait_tx_status(id: @bm4.tx_id, exp_status: "confirmed")
+  @bm1.wait_tx_status(id: @bm1.tx_id, exp_status: "confirmed")
 
-  @bm4.share_amount = amount
-  @bm4.share
-  @bm4.pay(wallet: @wallet, crypto: "BTC")
+  @bm1.share_amount = amount
+  @bm1.share
+  @bm1.pay(wallet: @wallet, crypto: "BTC")
   BTC.mine
-  @bm4.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
+  @bm1.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
 end
 
 When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, friend, second_amount, _|
@@ -101,16 +101,16 @@ When(/^I exchange "(\d+)" shares of asset "(.*)" with "(.*)" for "(\d+)" shares 
   BTC.mine
   @bm3.wait_tx_status(id: @bm3.tx_id, exp_status: "confirmed")
 
-  @bm4.grant(receiver: @bm4.default_identity, quantity: second_amount)
-  @bm4.counter_sign_grant(@bm4.default_identity)
-  @bm4.pay(wallet: @wallet, crypto: "BTC")
+  @bm1.grant(receiver: @bm1.default_identity, quantity: second_amount)
+  @bm1.counter_sign_grant(@bm1.default_identity)
+  @bm1.pay(wallet: @wallet, crypto: "BTC")
   BTC.mine
-  @bm4.wait_tx_status(id: @bm4.tx_id, exp_status: "confirmed")
+  @bm1.wait_tx_status(id: @bm1.tx_id, exp_status: "confirmed")
 end
 
 Then(/^I have "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |first_amount, _, second_amount, _|
   id, balance_a = @bm3.balance
-  id, balance_b = @bm4.balance
+  id, balance_b = @bm1.balance
 
   expect(balance_a).to eq(first_amount)
   expect(balance_b).to eq(second_amount)
@@ -118,7 +118,7 @@ end
 
 Then(/^"(.*)" has "(\d+)" shares of asset "(.*)", "(\d+)" shares of asset "(.*)"$/) do |friend, first_amount, _, second_amount, _|
   id, balance_a = @bm3.balance(@bm3.share_id, "Foo")
-  id, balance_b = @bm4.balance(@bm4.share_id, "Foo")
+  id, balance_b = @bm1.balance(@bm1.share_id, "Foo")
 
   expect(balance_a).to eq(first_amount)
   expect(balance_b).to eq(second_amount)
