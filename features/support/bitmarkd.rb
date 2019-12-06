@@ -45,7 +45,7 @@ class Bitmarkd
   end
 
   def normal?
-    "normal".casecmp?(status["mode"])
+    "normal".downcase == status["mode"].downcase
   end
 
   def bm_base_cmd
@@ -126,9 +126,9 @@ class Bitmarkd
       mode = status["mode"]
       break if exp_mode.downcase == mode.downcase
     end
-    puts "#{name} cli result:"
+    puts "#{name} rpc status result:"
     ap resp
-    unless exp_mode.casecmp?(mode)
+    unless exp_mode.downcase == mode.downcase
       raise "#{name} waits #{slept_time} seconds, " \
             "mode #{mode} differs from expected #{exp_mode}"
     end
