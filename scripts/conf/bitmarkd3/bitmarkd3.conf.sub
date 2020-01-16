@@ -132,7 +132,7 @@ M.client_rpc = {
 
     listen = {
         add_port("0.0.0.0", 2330),
-        add_port("::", 2330)
+        -- add_port("::", 2330)
     },
 
     -- announce certain public IP:ports to network
@@ -164,7 +164,7 @@ M.https_rpc = {
 
     listen = {
         add_port("0.0.0.0", 2331),
-        add_port("::", 2331),
+        -- add_port("::", 2331),
     },
 
     -- IP networks in CIDR form that can access the /bitmarkd/* GET APIs
