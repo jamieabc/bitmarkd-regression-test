@@ -29,7 +29,7 @@ check_script_result() {
 
 clean_up_programs=(
   "bitmarkd"
-  "recorderd"
+  #"recorderd"
   "bitcoind"
   "litecoind"
 )
@@ -89,10 +89,10 @@ check_crypto
 setup_bitmarkd
 measure_time run_bitmarkd
 
-setup_recorderd
-check_script_result "setup-recorderd"
+#setup_recorderd
+#check_script_result "setup-recorderd"
 
-run_recorderd
-check_script_result "run-recorderd"
+#run_recorderd
+#check_script_result "run-recorderd"
 
 exit $SUCCESS_CODE
